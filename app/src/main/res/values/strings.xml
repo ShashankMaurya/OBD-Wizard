@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">OBD Wizard</string>
+    <string name="action_settings">About</string>
+
+    <!--  Tool Specific  -->
+    <string name="status_disconnected">DISCONNECTED</string>
+    <string name="status_connecting">CONNECTING…</string>
+    <string name="status_connected">CONNECTED: RE 350</string>
+    <string name="status_mock">CONNECTED: MOCK ENGINE</string>
+    <string name="btn_connect">Connect</string>
+    <string name="btn_disconnect">Disconnect</string>
+    <string name="btn_dtc">SCAN / CLEAR DTC CODES</string>
+</resources>
