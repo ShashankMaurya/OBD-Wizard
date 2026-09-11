@@ -12,7 +12,7 @@ public interface IObdDataSource {
 
     boolean isConnected();
 
-    MotorcycleTelemetry pollTelemetry();
+    MotorcycleTelemetry pollTelemetry() throws IOException;
 
     List<String> readDtcCodes() throws IOException;
 
