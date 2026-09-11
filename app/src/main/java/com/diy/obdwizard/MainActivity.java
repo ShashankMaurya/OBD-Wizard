@@ -15,27 +15,21 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.diy.obdwizard.bluetooth.BluetoothConnection;
 import com.diy.obdwizard.dtc.DtcHelper;
-import com.diy.obdwizard.obd.RePidEngine;
-import com.diy.obdwizard.obd.interfaces.IObdDataSource;
+import com.diy.obdwizard.obd.ObdConnectionManager;
+import com.diy.obdwizard.obd.interfaces.ObdManagerCallbacks;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ObdManagerCallbacks.ConnectionListener {
 
     private TextView txtStatus, txtGear, txtSpeed, txtRpm, txtTemp, txtThrottle;
     private Button btnConnect, btnDtc, btnDtcDictionary;
 
-    private IObdDataSource obdSource;
-    private final ExecutorService workerThread = Executors.newSingleThreadExecutor();
-    private volatile boolean isPolling = false;
+    private ObdConnectionManager obdManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +46,19 @@ public class MainActivity extends AppCompatActivity {
         btnDtc = findViewById(R.id.btnDtc);
         btnDtcDictionary = findViewById(R.id.btnDtcDictionary);
 
+        obdManager = new ObdConnectionManager(this);
+
         // Pre-load the DTC map in a background thread so it's instantly ready when requested
-        workerThread.execute(() -> DtcHelper.preloadDtcMap(getApplicationContext()));
+        obdManager.executeInBackground(() -> DtcHelper.preloadDtcMap(getApplicationContext()));
 
         checkPermissions();
 
         btnConnect.setOnClickListener(v -> {
-            if (isPolling) stopPolling();
-            else startConnection();
+            if (obdManager.isConnected()) {
+                obdManager.disconnect();
+            } else {
+                startConnection();
+            }
         });
 
         btnDtc.setOnClickListener(v -> openDtcDialog());
@@ -100,91 +99,52 @@ public class MainActivity extends AppCompatActivity {
         }
 
         txtStatus.setText(R.string.status_connecting);
-        final BluetoothDevice finalDevice = targetDevice;
-
-        workerThread.execute(() -> {
-            BluetoothConnection bt = new BluetoothConnection(finalDevice);
-            obdSource = new RePidEngine(bt);
-            if (obdSource.connect()) {
-                isPolling = true;
-                runOnUiThread(() -> {
-                    txtStatus.setText(R.string.status_connected);
-                    txtStatus.setTextColor(getColor(R.color.accent_green));
-                    btnConnect.setText(R.string.btn_disconnect);
-                });
-                runTelemetryLoop();
-            } else {
-                runOnUiThread(() -> {
-                    txtStatus.setText("Connection Failed");
-                    txtStatus.setTextColor(getColor(R.color.accent_red));
-                });
-            }
-        });
+        obdManager.connect(targetDevice);
     }
 
-    private void runTelemetryLoop() {
-        while (isPolling && obdSource != null && obdSource.isConnected()) {
-            try {
-                MotorcycleTelemetry data = obdSource.pollTelemetry();
-                runOnUiThread(() -> {
-                    txtGear.setText(data.calculatedGear);
-                    txtGear.setTextColor(data.calculatedGear.equals("N") ? getColor(R.color.accent_green) : getColor(R.color.text_white));
-                    txtSpeed.setText(String.valueOf(data.speedKmh));
-                    txtRpm.setText(String.valueOf(data.rpm));
-                    txtTemp.setText(data.engineTempC + " °C");
-                    txtThrottle.setText((int) data.throttlePercent + " %");
-                });
-            } catch (IOException e) {
-                handleUnexpectedDisconnect();
-                break;
-            }
-
-            try {
-                Thread.sleep(60);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
-        if (isPolling && (obdSource == null || !obdSource.isConnected())) {
-            handleUnexpectedDisconnect();
-        }
-    }
-
-    private void handleUnexpectedDisconnect() {
-        if (!isPolling) return;
-        isPolling = false;
-        if (obdSource != null) {
-            obdSource.disconnect();
-        }
+    @Override
+    public void onConnectionStateChanged(boolean isConnected) {
         runOnUiThread(() -> {
-            txtStatus.setText(R.string.status_disconnected);
-            txtStatus.setTextColor(getColor(R.color.accent_red));
-            btnConnect.setText(R.string.btn_connect);
-            Toast.makeText(MainActivity.this, "OBD device disconnected", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    private void stopPolling() {
-        isPolling = false;
-        workerThread.execute(() -> {
-            if (obdSource != null) obdSource.disconnect();
-            runOnUiThread(() -> {
+            if (isConnected) {
+                txtStatus.setText(R.string.status_connected);
+                txtStatus.setTextColor(getColor(R.color.accent_green));
+                btnConnect.setText(R.string.btn_disconnect);
+            } else {
                 txtStatus.setText(R.string.status_disconnected);
                 txtStatus.setTextColor(getColor(R.color.accent_red));
                 btnConnect.setText(R.string.btn_connect);
-            });
+            }
+        });
+    }
+
+    @Override
+    public void onTelemetryDataReceived(MotorcycleTelemetry data) {
+        runOnUiThread(() -> {
+            txtGear.setText(data.calculatedGear);
+            txtGear.setTextColor(data.calculatedGear.equals("N") ? getColor(R.color.accent_green) : getColor(R.color.text_white));
+            txtSpeed.setText(String.valueOf(data.speedKmh));
+            txtRpm.setText(String.valueOf(data.rpm));
+            txtTemp.setText(data.engineTempC + " °C");
+            txtThrottle.setText((int) data.throttlePercent + " %");
+        });
+    }
+
+    @Override
+    public void onError(String message) {
+        runOnUiThread(() -> {
+            if (message.equals("Connection Failed")) {
+                txtStatus.setText("Connection Failed");
+                txtStatus.setTextColor(getColor(R.color.accent_red));
+            } else {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     private void openDtcDialog() {
-        if (!isPolling || obdSource == null || !obdSource.isConnected()) {
-            Toast.makeText(this, "Connect to ECU first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        workerThread.execute(() -> {
-            try {
-                List<String> codes = obdSource.readDtcCodes();
+        obdManager.readDtc(new ObdManagerCallbacks.DtcReadListener() {
+            @Override
+            public void onDtcRead(List<String> codes) {
                 runOnUiThread(() -> {
                     StringBuilder sb = new StringBuilder();
                     if (codes.isEmpty()) {
@@ -196,25 +156,22 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    new AlertDialog.Builder(this)
+                    new AlertDialog.Builder(MainActivity.this)
                             .setTitle("Royal Enfield DTC Diagnostics")
                             .setMessage(sb.toString())
                             .setPositiveButton("Clear Codes", (dialog, which) -> {
-                                workerThread.execute(() -> {
-                                    try {
-                                        boolean cleared = obdSource.clearDtcCodes();
-                                        runOnUiThread(() -> Toast.makeText(this, cleared ? "Codes Cleared" : "Clear Failed", Toast.LENGTH_SHORT).show());
-                                    } catch (IOException e) {
-                                        handleUnexpectedDisconnect();
-                                    }
-                                });
+                                obdManager.clearDtc(success -> runOnUiThread(() ->
+                                        Toast.makeText(MainActivity.this, success ? "Codes Cleared" : "Clear Failed", Toast.LENGTH_SHORT).show()
+                                ));
                             })
                             .setNegativeButton("Close", null)
                             .show();
                 });
-            } catch (IOException e) {
-                handleUnexpectedDisconnect();
-                runOnUiThread(() -> Toast.makeText(this, "Failed to read DTC codes: Device disconnected", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -234,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopPolling();
-        workerThread.shutdown();
+        obdManager.destroy();
     }
 }
