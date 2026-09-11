@@ -1,0 +1,23 @@
+{
+  "P0100": "Mass or Volume Air Flow Sensor 'A' Circuit",
+  "P0105": "Manifold Absolute Pressure (MAP) Sensor Circuit",
+  "P0113": "Intake Air Temperature (IAT) Sensor Circuit High",
+  "P0115": "Engine Temperature Circuit",
+  "P0120": "Throttle Position Sensor (TPS) Circuit",
+  "P0130": "O2 Sensor Circuit (Bank 1)",
+  "P0135": "O2 Sensor Heater Circuit (Bank 1 Sensor 1)",
+  "P0200": "Injector Circuit/Open",
+  "P0201": "Injector Circuit/Open - Cylinder 1",
+  "P0230": "Fuel Pump Primary Circuit",
+  "P0300": "Random/Multiple Cylinder Misfire Detected",
+  "P0301": "Cylinder 1 Misfire Detected",
+  "P0335": "Crankshaft Position Sensor 'A' Circuit",
+  "P0351": "Ignition Coil 'A' Primary/Secondary Circuit",
+  "P0500": "Vehicle Speed Sensor 'A'",
+  "P0505": "Idle Air Control System",
+  "P0562": "System Voltage Low",
+  "P0563": "System Voltage High",
+  "P0600": "Serial Communication Link",
+  "P0601": "Internal Control Module Memory Check Sum Error",
+  "U0122": "Lost Communication With Vehicle Dynamics Control Module (ABS)"
+}

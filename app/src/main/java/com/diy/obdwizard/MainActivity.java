@@ -23,6 +23,7 @@ import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +31,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private TextView txtStatus, txtGear, txtSpeed, txtRpm, txtTemp, txtThrottle;
-    private Button btnConnect, btnDtc;
+    private Button btnConnect, btnDtc, btnDtcDictionary;
 
     private IObdDataSource obdSource;
     private final ExecutorService workerThread = Executors.newSingleThreadExecutor();
@@ -49,6 +50,10 @@ public class MainActivity extends AppCompatActivity {
         txtThrottle = findViewById(R.id.txtThrottle);
         btnConnect = findViewById(R.id.btnConnect);
         btnDtc = findViewById(R.id.btnDtc);
+        btnDtcDictionary = findViewById(R.id.btnDtcDictionary);
+
+        // Pre-load the DTC map in a background thread so it's instantly ready when requested
+        workerThread.execute(() -> DtcHelper.preloadDtcMap(getApplicationContext()));
 
         checkPermissions();
 
@@ -58,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnDtc.setOnClickListener(v -> openDtcDialog());
+        btnDtcDictionary.setOnClickListener(v -> showDtcDictionaryDialog());
     }
 
     private void checkPermissions() {
@@ -186,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         for (String code : codes) {
                             sb.append("• ").append(code).append(": ")
-                                    .append(DtcHelper.getDtcDescription(code)).append("\n");
+                                    .append(DtcHelper.getDtcDescription(MainActivity.this, code)).append("\n");
                         }
                     }
 
@@ -211,6 +217,18 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> Toast.makeText(this, "Failed to read DTC codes: Device disconnected", Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    private void showDtcDictionaryDialog() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : DtcHelper.getAllKnownDtcs(this).entrySet()) {
+            sb.append("• ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n\n");
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("DTC Dictionary")
+                .setMessage(sb.toString().trim())
+                .setPositiveButton("Close", null)
+                .show();
     }
 
     @Override

@@ -170,4 +170,14 @@
         android:textColor="@color/text_white"
         android:textStyle="bold" />
 
+    <Button
+        android:id="@+id/btnDtcDictionary"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/card_bg"
+        android:text="Show All DTC Descriptions"
+        android:textColor="@color/text_white"
+        android:textStyle="bold" />
+
 </LinearLayout>
