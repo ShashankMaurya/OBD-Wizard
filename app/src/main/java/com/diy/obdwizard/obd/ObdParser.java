@@ -90,4 +90,141 @@ public class ObdParser {
         if (ratio > 27.5) return "5";
         return "-";
     }
+
+    /**
+     * Mode 01 PID 0B (Intake Manifold Absolute Pressure - MAP) in kPa.
+     */
+    public static int parseMap(String raw) {
+        if (raw == null) return 0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("410B");
+        if (idx != -1 && clean.length() >= idx + 6) {
+            try {
+                return Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Mode 01 PID 0F (Intake Air Temperature - IAT) in °C.
+     */
+    public static int parseIat(String raw) {
+        if (raw == null) return 0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("410F");
+        if (idx != -1 && clean.length() >= idx + 6) {
+            try {
+                return Integer.parseInt(clean.substring(idx + 4, idx + 6), 16) - 40;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Mode 01 PID 14 (O2 Sensor Bank 1 Sensor 1 Voltage) in Volts.
+     */
+    public static double parseO2Voltage(String raw) {
+        if (raw == null) return 0.0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("4114");
+        if (idx != -1 && clean.length() >= idx + 6) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                return a / 200.0;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0.0;
+    }
+
+    /**
+     * Mode 01 PID 42 (Control Module Voltage) in Volts.
+     */
+    public static double parseControlModuleVoltage(String raw) {
+        if (raw == null) return 0.0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("4142");
+        if (idx != -1 && clean.length() >= idx + 8) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                int b = Integer.parseInt(clean.substring(idx + 6, idx + 8), 16);
+                return ((a * 256.0) + b) / 1000.0;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0.0;
+    }
+
+    /**
+     * Mode 01 PID 04 (Calculated Engine Load) in percentage.
+     */
+    public static double parseEngineLoad(String raw) {
+        if (raw == null) return 0.0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("4104");
+        if (idx != -1 && clean.length() >= idx + 6) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                return (a * 100.0) / 255.0;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0.0;
+    }
+
+    /**
+     * Mode 01 PID 0E (Ignition Timing Advance) in degrees.
+     */
+    public static double parseTimingAdvance(String raw) {
+        if (raw == null) return 0.0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("410E");
+        if (idx != -1 && clean.length() >= idx + 6) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                return (a / 2.0) - 64.0;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0.0;
+    }
+
+    /**
+     * Mode 01 PID 1F (Run Time Since Engine Start) in seconds.
+     */
+    public static int parseRunTime(String raw) {
+        if (raw == null) return 0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("411F");
+        if (idx != -1 && clean.length() >= idx + 8) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                int b = Integer.parseInt(clean.substring(idx + 6, idx + 8), 16);
+                return (a * 256) + b;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Mode 01 PID 21 (Distance Traveled with MIL on) in km.
+     */
+    public static int parseDistanceMil(String raw) {
+        if (raw == null) return 0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("4121");
+        if (idx != -1 && clean.length() >= idx + 8) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                int b = Integer.parseInt(clean.substring(idx + 6, idx + 8), 16);
+                return (a * 256) + b;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return 0;
+    }
 }

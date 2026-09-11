@@ -56,20 +56,37 @@ public class RePidEngine implements IObdDataSource {
     @Override
     public MotorcycleTelemetry pollTelemetry() throws IOException {
         MotorcycleTelemetry data = new MotorcycleTelemetry();
-        // Mode 01 PID 0C: Engine RPM
+        // Base PIDs
         String rpmRaw = connection.sendCommand("010C");
-        // Mode 01 PID 0D: Vehicle Speed (km/h)
         String speedRaw = connection.sendCommand("010D");
-        // Mode 01 PID 11: Throttle Position (%)
         String throttleRaw = connection.sendCommand("0111");
-        // Mode 01 PID 05: Engine Coolant Temperature (°C)
         String tempRaw = connection.sendCommand("0105");
+
+        // New PIDs
+        String mapRaw = connection.sendCommand("010B");
+        String iatRaw = connection.sendCommand("010F");
+        String o2VoltsRaw = connection.sendCommand("0114");
+        String controlVoltsRaw = connection.sendCommand("0142");
+        String loadRaw = connection.sendCommand("0104");
+        String timingRaw = connection.sendCommand("010E");
+        String runTimeRaw = connection.sendCommand("011F");
+        String distMilRaw = connection.sendCommand("0121");
 
         data.rpm = ObdParser.parseRpm(rpmRaw);
         data.speedKmh = ObdParser.parseSpeed(speedRaw);
         data.throttlePercent = ObdParser.parseThrottle(throttleRaw);
         data.engineTempC = ObdParser.parseTemp(tempRaw);
         data.calculatedGear = ObdParser.calculateGear(data.speedKmh, data.rpm);
+
+        data.mapKpa = ObdParser.parseMap(mapRaw);
+        data.iatTempC = ObdParser.parseIat(iatRaw);
+        data.o2Voltage = ObdParser.parseO2Voltage(o2VoltsRaw);
+        data.controlModuleVoltage = ObdParser.parseControlModuleVoltage(controlVoltsRaw);
+        data.engineLoadPercent = ObdParser.parseEngineLoad(loadRaw);
+        data.timingAdvance = ObdParser.parseTimingAdvance(timingRaw);
+        data.runTimeSeconds = ObdParser.parseRunTime(runTimeRaw);
+        data.distanceWithMilKm = ObdParser.parseDistanceMil(distMilRaw);
+
         return data;
     }
 

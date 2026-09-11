@@ -21,12 +21,14 @@ import com.diy.obdwizard.obd.interfaces.ObdManagerCallbacks;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements ObdManagerCallbacks.ConnectionListener {
 
     private TextView txtStatus, txtGear, txtSpeed, txtRpm, txtTemp, txtThrottle;
+    private TextView txtMap, txtIat, txtLoad, txtO2, txtBatt, txtTiming, txtRuntime, txtMilDist;
     private Button btnConnect, btnDtc, btnDtcDictionary;
 
     private ObdConnectionManager obdManager;
@@ -42,6 +44,16 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         txtRpm = findViewById(R.id.txtRpm);
         txtTemp = findViewById(R.id.txtTemp);
         txtThrottle = findViewById(R.id.txtThrottle);
+
+        txtMap = findViewById(R.id.txtMap);
+        txtIat = findViewById(R.id.txtIat);
+        txtLoad = findViewById(R.id.txtLoad);
+        txtO2 = findViewById(R.id.txtO2);
+        txtBatt = findViewById(R.id.txtBatt);
+        txtTiming = findViewById(R.id.txtTiming);
+        txtRuntime = findViewById(R.id.txtRuntime);
+        txtMilDist = findViewById(R.id.txtMilDist);
+
         btnConnect = findViewById(R.id.btnConnect);
         btnDtc = findViewById(R.id.btnDtc);
         btnDtcDictionary = findViewById(R.id.btnDtcDictionary);
@@ -123,9 +135,21 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
             txtGear.setText(data.calculatedGear);
             txtGear.setTextColor(data.calculatedGear.equals("N") ? getColor(R.color.accent_green) : getColor(R.color.text_white));
             txtSpeed.setText(String.valueOf(data.speedKmh));
+
             txtRpm.setText(String.valueOf(data.rpm));
             txtTemp.setText(data.engineTempC + " °C");
             txtThrottle.setText((int) data.throttlePercent + " %");
+
+            txtMap.setText(String.valueOf(data.mapKpa));
+            txtIat.setText(data.iatTempC + " °C");
+            txtLoad.setText((int) data.engineLoadPercent + " %");
+
+            txtO2.setText(String.format(Locale.US, "%.2f V", data.o2Voltage));
+            txtBatt.setText(String.format(Locale.US, "%.1f V", data.controlModuleVoltage));
+            txtTiming.setText(String.format(Locale.US, "%.1f°", data.timingAdvance));
+
+            txtRuntime.setText(data.runTimeSeconds + " s");
+            txtMilDist.setText(data.distanceWithMilKm + " km");
         });
     }
 
