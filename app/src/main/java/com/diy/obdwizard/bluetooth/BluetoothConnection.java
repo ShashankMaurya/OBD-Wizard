@@ -36,29 +36,48 @@ public class BluetoothConnection {
     }
 
     public synchronized String sendCommand(String command) throws IOException {
-        if (outputStream == null || inputStream == null) {
+        if (outputStream == null || inputStream == null || socket == null || !socket.isConnected()) {
+            disconnect();
             throw new IOException("Bluetooth socket not connected");
         }
 
-        outputStream.write((command + "\r").getBytes());
-        outputStream.flush();
+        try {
+            outputStream.write((command + "\r").getBytes());
+            outputStream.flush();
 
-        StringBuilder response = new StringBuilder();
-        byte[] buffer = new byte[256];
-        int bytesRead;
+            StringBuilder response = new StringBuilder();
+            byte[] buffer = new byte[256];
+            int bytesRead;
 
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            String chunk = new String(buffer, 0, bytesRead);
-            response.append(chunk);
-            if (chunk.contains(">")) {
-                break;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                String chunk = new String(buffer, 0, bytesRead);
+                response.append(chunk);
+                if (chunk.contains(">")) {
+                    break;
+                }
             }
-        }
 
-        return response.toString().replace(">", "").trim();
+            if (bytesRead == -1 && response.length() == 0) {
+                disconnect();
+                throw new IOException("Bluetooth stream closed by remote device");
+            }
+
+            return response.toString().replace(">", "").trim();
+        } catch (IOException e) {
+            disconnect();
+            throw e;
+        }
     }
 
     public synchronized void disconnect() {
+        try {
+            if (inputStream != null) inputStream.close();
+        } catch (IOException ignored) {
+        }
+        try {
+            if (outputStream != null) outputStream.close();
+        } catch (IOException ignored) {
+        }
         try {
             if (socket != null) socket.close();
         } catch (IOException ignored) {

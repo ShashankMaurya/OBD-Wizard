@@ -54,25 +54,22 @@ public class RePidEngine implements IObdDataSource {
     }
 
     @Override
-    public MotorcycleTelemetry pollTelemetry() {
+    public MotorcycleTelemetry pollTelemetry() throws IOException {
         MotorcycleTelemetry data = new MotorcycleTelemetry();
-        try {
-            // Mode 01 PID 0C: Engine RPM
-            String rpmRaw = connection.sendCommand("010C");
-            // Mode 01 PID 0D: Vehicle Speed (km/h)
-            String speedRaw = connection.sendCommand("010D");
-            // Mode 01 PID 11: Throttle Position (%)
-            String throttleRaw = connection.sendCommand("0111");
-            // Mode 01 PID 05: Engine Coolant Temperature (°C)
-            String tempRaw = connection.sendCommand("0105");
+        // Mode 01 PID 0C: Engine RPM
+        String rpmRaw = connection.sendCommand("010C");
+        // Mode 01 PID 0D: Vehicle Speed (km/h)
+        String speedRaw = connection.sendCommand("010D");
+        // Mode 01 PID 11: Throttle Position (%)
+        String throttleRaw = connection.sendCommand("0111");
+        // Mode 01 PID 05: Engine Coolant Temperature (°C)
+        String tempRaw = connection.sendCommand("0105");
 
-            data.rpm = ObdParser.parseRpm(rpmRaw);
-            data.speedKmh = ObdParser.parseSpeed(speedRaw);
-            data.throttlePercent = ObdParser.parseThrottle(throttleRaw);
-            data.engineTempC = ObdParser.parseTemp(tempRaw);
-            data.calculatedGear = ObdParser.calculateGear(data.speedKmh, data.rpm);
-        } catch (IOException ignored) {
-        }
+        data.rpm = ObdParser.parseRpm(rpmRaw);
+        data.speedKmh = ObdParser.parseSpeed(speedRaw);
+        data.throttlePercent = ObdParser.parseThrottle(throttleRaw);
+        data.engineTempC = ObdParser.parseTemp(tempRaw);
+        data.calculatedGear = ObdParser.calculateGear(data.speedKmh, data.rpm);
         return data;
     }
 
