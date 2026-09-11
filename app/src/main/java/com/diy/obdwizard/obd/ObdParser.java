@@ -227,4 +227,54 @@ public class ObdParser {
         }
         return 0;
     }
+
+    /**
+     * Calculates fuel flow in Liters per Hour (L/h).
+     */
+    public static double calculateFuelFlowLph(int rpm, int mapKpa, int iatC) {
+        if (rpm == 0 || mapKpa == 0) return 0.0;
+
+        double DISP_L = 0.349;
+        double VE = 0.80;
+        double AFR = 14.7;
+        double GAS_DENSITY = 740.0; // g/L
+
+        double tempK = iatC + 273.15;
+        if (tempK == 0) return 0.0;
+
+        // MAF (g/s) approximation using the Ideal Gas Law and Speed Density method
+        double maf = (rpm * mapKpa / tempK) * (DISP_L * VE / 120.0) * 3.484;
+
+        double fuelGs = maf / AFR;
+        double fuelLs = fuelGs / GAS_DENSITY;
+        return fuelLs * 3600.0;
+    }
+
+    /**
+     * Calculates instant fuel economy (km/L) using RPM, MAP, IAT, and Speed.
+     * Assumes 349cc displacement and ~80% volumetric efficiency.
+     */
+    public static double calculateFuelEconomy(int rpm, int mapKpa, int iatC, int speedKmh) {
+        if (speedKmh == 0) return 0.0;
+        double fuelLh = calculateFuelFlowLph(rpm, mapKpa, iatC);
+        if (fuelLh == 0) return 0.0;
+        return speedKmh / fuelLh;
+    }
+
+    /**
+     * Checks if the battery charging system might be failing (e.g., Stator issue).
+     */
+    public static boolean checkBatteryHealth(int rpm, double voltage) {
+        return rpm > 1500 && voltage > 0 && voltage < 13.5;
+    }
+
+    /**
+     * Estimates Lean/Rich mixture state based on O2 sensor voltage.
+     */
+    public static String evaluateMixture(double o2Volts) {
+        if (o2Volts <= 0.0) return "-";
+        if (o2Volts < 0.3) return "LEAN";
+        if (o2Volts > 0.6) return "RICH";
+        return "OPTIMAL";
+    }
 }

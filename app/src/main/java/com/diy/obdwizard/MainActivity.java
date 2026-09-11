@@ -8,29 +8,36 @@ import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 
 import com.diy.obdwizard.dtc.DtcHelper;
 import com.diy.obdwizard.obd.ObdConnectionManager;
 import com.diy.obdwizard.obd.interfaces.ObdManagerCallbacks;
+import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
+import com.diy.obdwizard.ui.AboutFragment;
+import com.diy.obdwizard.ui.DerivedDashFragment;
+import com.diy.obdwizard.ui.DtcFragment;
+import com.diy.obdwizard.ui.HomeFragment;
+import com.diy.obdwizard.ui.StandardDashFragment;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements ObdManagerCallbacks.ConnectionListener {
 
-    private TextView txtStatus, txtGear, txtSpeed, txtRpm, txtTemp, txtThrottle;
-    private TextView txtMap, txtIat, txtLoad, txtO2, txtBatt, txtTiming, txtRuntime, txtMilDist;
-    private Button btnConnect, btnDtc, btnDtcDictionary;
-
+    private DrawerLayout drawerLayout;
+    private TextView txtGlobalStatus;
     private ObdConnectionManager obdManager;
 
     @Override
@@ -38,43 +45,64 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtStatus = findViewById(R.id.txtStatus);
-        txtGear = findViewById(R.id.txtGear);
-        txtSpeed = findViewById(R.id.txtSpeed);
-        txtRpm = findViewById(R.id.txtRpm);
-        txtTemp = findViewById(R.id.txtTemp);
-        txtThrottle = findViewById(R.id.txtThrottle);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        txtMap = findViewById(R.id.txtMap);
-        txtIat = findViewById(R.id.txtIat);
-        txtLoad = findViewById(R.id.txtLoad);
-        txtO2 = findViewById(R.id.txtO2);
-        txtBatt = findViewById(R.id.txtBatt);
-        txtTiming = findViewById(R.id.txtTiming);
-        txtRuntime = findViewById(R.id.txtRuntime);
-        txtMilDist = findViewById(R.id.txtMilDist);
+        txtGlobalStatus = findViewById(R.id.txtGlobalStatus);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navView = findViewById(R.id.nav_view);
 
-        btnConnect = findViewById(R.id.btnConnect);
-        btnDtc = findViewById(R.id.btnDtc);
-        btnDtcDictionary = findViewById(R.id.btnDtcDictionary);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        );
+        toggle.getDrawerArrowDrawable().setColor(getColor(R.color.text_white));
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navView.setNavigationItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_home) {
+                selectedFragment = new HomeFragment();
+            } else if (itemId == R.id.nav_standard_dashboard) {
+                selectedFragment = new StandardDashFragment();
+            } else if (itemId == R.id.nav_derived_dashboard) {
+                selectedFragment = new DerivedDashFragment();
+            } else if (itemId == R.id.nav_dtc) {
+                selectedFragment = new DtcFragment();
+            } else if (itemId == R.id.nav_about) {
+                selectedFragment = new AboutFragment();
+            }
+
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+                setTitle(item.getTitle());
+            }
+
+            drawerLayout.closeDrawers();
+            return true;
+        });
 
         obdManager = new ObdConnectionManager(this);
-
-        // Pre-load the DTC map in a background thread so it's instantly ready when requested
         obdManager.executeInBackground(() -> DtcHelper.preloadDtcMap(getApplicationContext()));
 
         checkPermissions();
 
-        btnConnect.setOnClickListener(v -> {
-            if (obdManager.isConnected()) {
-                obdManager.disconnect();
-            } else {
-                startConnection();
-            }
-        });
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new HomeFragment())
+                    .commit();
+            navView.setCheckedItem(R.id.nav_home);
+        }
+    }
 
-        btnDtc.setOnClickListener(v -> openDtcDialog());
-        btnDtcDictionary.setOnClickListener(v -> showDtcDictionaryDialog());
+    public ObdConnectionManager getObdManager() {
+        return obdManager;
     }
 
     private void checkPermissions() {
@@ -89,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
     }
 
     @SuppressLint("MissingPermission")
-    private void startConnection() {
+    public void startConnection() {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter == null || !adapter.isEnabled()) {
             Toast.makeText(this, "Enable Bluetooth first", Toast.LENGTH_SHORT).show();
@@ -106,25 +134,46 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         }
 
         if (targetDevice == null) {
-            Toast.makeText(this, "Paired OBD scanner not found in settings", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Paired OBD scanner not found", Toast.LENGTH_LONG).show();
             return;
         }
 
-        txtStatus.setText(R.string.status_connecting);
         obdManager.connect(targetDevice);
+    }
+
+    public void disconnect() {
+        obdManager.disconnect();
+    }
+
+    private void updateGlobalStatus(int resId, int color) {
+        if (txtGlobalStatus != null) {
+            txtGlobalStatus.setText(resId);
+            txtGlobalStatus.setTextColor(color);
+        }
+    }
+
+    @Override
+    public void onConnecting() {
+        runOnUiThread(() -> {
+            updateGlobalStatus(R.string.status_connecting, getColor(R.color.text_gray));
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof HomeFragment) {
+                ((HomeFragment) currentFragment).showConnecting();
+            }
+        });
     }
 
     @Override
     public void onConnectionStateChanged(boolean isConnected) {
         runOnUiThread(() -> {
             if (isConnected) {
-                txtStatus.setText(R.string.status_connected);
-                txtStatus.setTextColor(getColor(R.color.accent_green));
-                btnConnect.setText(R.string.btn_disconnect);
+                updateGlobalStatus(R.string.status_connected, getColor(R.color.accent_green));
             } else {
-                txtStatus.setText(R.string.status_disconnected);
-                txtStatus.setTextColor(getColor(R.color.accent_red));
-                btnConnect.setText(R.string.btn_connect);
+                updateGlobalStatus(R.string.status_disconnected, getColor(R.color.accent_red));
+            }
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof HomeFragment) {
+                ((HomeFragment) currentFragment).updateStatus();
             }
         });
     }
@@ -132,40 +181,19 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
     @Override
     public void onTelemetryDataReceived(MotorcycleTelemetry data) {
         runOnUiThread(() -> {
-            txtGear.setText(data.calculatedGear);
-            txtGear.setTextColor(data.calculatedGear.equals("N") ? getColor(R.color.accent_green) : getColor(R.color.text_white));
-            txtSpeed.setText(String.valueOf(data.speedKmh));
-
-            txtRpm.setText(String.valueOf(data.rpm));
-            txtTemp.setText(data.engineTempC + " °C");
-            txtThrottle.setText((int) data.throttlePercent + " %");
-
-            txtMap.setText(String.valueOf(data.mapKpa));
-            txtIat.setText(data.iatTempC + " °C");
-            txtLoad.setText((int) data.engineLoadPercent + " %");
-
-            txtO2.setText(String.format(Locale.US, "%.2f V", data.o2Voltage));
-            txtBatt.setText(String.format(Locale.US, "%.1f V", data.controlModuleVoltage));
-            txtTiming.setText(String.format(Locale.US, "%.1f°", data.timingAdvance));
-
-            txtRuntime.setText(data.runTimeSeconds + " s");
-            txtMilDist.setText(data.distanceWithMilKm + " km");
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof TelemetryUpdateListener) {
+                ((TelemetryUpdateListener) currentFragment).onTelemetryData(data);
+            }
         });
     }
 
     @Override
     public void onError(String message) {
-        runOnUiThread(() -> {
-            if (message.equals("Connection Failed")) {
-                txtStatus.setText("Connection Failed");
-                txtStatus.setTextColor(getColor(R.color.accent_red));
-            } else {
-                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-            }
-        });
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
     }
 
-    private void openDtcDialog() {
+    public void openDtcDialog() {
         obdManager.readDtc(new ObdManagerCallbacks.DtcReadListener() {
             @Override
             public void onDtcRead(List<String> codes) {
@@ -183,11 +211,11 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
                     new AlertDialog.Builder(MainActivity.this)
                             .setTitle("Royal Enfield DTC Diagnostics")
                             .setMessage(sb.toString())
-                            .setPositiveButton("Clear Codes", (dialog, which) -> {
-                                obdManager.clearDtc(success -> runOnUiThread(() ->
-                                        Toast.makeText(MainActivity.this, success ? "Codes Cleared" : "Clear Failed", Toast.LENGTH_SHORT).show()
-                                ));
-                            })
+                            .setPositiveButton("Clear Codes", (dialog, which) ->
+                                    obdManager.clearDtc(success -> runOnUiThread(() ->
+                                            Toast.makeText(MainActivity.this, success ? "Codes Cleared" : "Clear Failed", Toast.LENGTH_SHORT).show()
+                                    ))
+                            )
                             .setNegativeButton("Close", null)
                             .show();
                 });
@@ -200,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         });
     }
 
-    private void showDtcDictionaryDialog() {
+    public void showDtcDictionaryDialog() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : DtcHelper.getAllKnownDtcs(this).entrySet()) {
             sb.append("• ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n\n");

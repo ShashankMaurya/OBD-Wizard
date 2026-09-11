@@ -7,6 +7,8 @@ import java.util.List;
 public interface ObdManagerCallbacks {
 
     interface ConnectionListener {
+        void onConnecting();
+
         void onConnectionStateChanged(boolean isConnected);
 
         void onTelemetryDataReceived(MotorcycleTelemetry data);

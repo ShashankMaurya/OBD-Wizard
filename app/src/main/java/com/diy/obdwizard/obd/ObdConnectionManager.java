@@ -18,17 +18,27 @@ public class ObdConnectionManager {
     private final ObdManagerCallbacks.ConnectionListener listener;
     private IObdDataSource obdSource;
     private volatile boolean isPolling = false;
+    private volatile boolean isConnecting = false;
 
     public ObdConnectionManager(ObdManagerCallbacks.ConnectionListener listener) {
         this.listener = listener;
     }
 
+    public boolean isConnecting() {
+        return isConnecting;
+    }
+
     public void connect(BluetoothDevice targetDevice) {
-        if (isPolling) return;
+        if (isPolling || isConnecting) return;
+        isConnecting = true;
+        if (listener != null) listener.onConnecting();
+
         workerThread.execute(() -> {
             BluetoothConnection bt = new BluetoothConnection(targetDevice);
             obdSource = new RePidEngine(bt);
-            if (obdSource.connect()) {
+            boolean connected = obdSource.connect();
+            isConnecting = false;
+            if (connected) {
                 isPolling = true;
                 if (listener != null) listener.onConnectionStateChanged(true);
                 runTelemetryLoop();

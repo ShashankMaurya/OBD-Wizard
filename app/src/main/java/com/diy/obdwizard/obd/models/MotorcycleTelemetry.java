@@ -16,6 +16,17 @@ public class MotorcycleTelemetry {
     public int runTimeSeconds = 0;
     public int distanceWithMilKm = 0;
 
+    // Derived / Calculated fields
+    public double fuelEconomyKml = 0.0;
+    public double averageFuelEconomyKml = 0.0;
+    public double sessionFuelConsumedLiters = 0.0;
+    public boolean isBatteryChargingPoor = false;
+    public String mixtureStatus = "-";
+    public double zeroToFortyTime = 0.0;
+    public double zeroToSixtyTime = 0.0;
+    public double zeroToEightyTime = 0.0;
+    public double zeroToHundredTime = 0.0;
+
     public MotorcycleTelemetry() {
     }
 }
