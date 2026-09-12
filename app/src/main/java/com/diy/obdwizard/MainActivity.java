@@ -11,10 +11,12 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
     private DrawerLayout drawerLayout;
     private TextView txtGlobalStatus;
     private ObdConnectionManager obdManager;
+    private long backPressedTime = 0;
+    private Toast backToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +103,26 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
                     .commit();
             navView.setCheckedItem(R.id.nav_home);
         }
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                        if (backToast != null) {
+                            backToast.cancel();
+                        }
+                        finish();
+                    } else {
+                        backToast = Toast.makeText(MainActivity.this, "Press back again to exit", Toast.LENGTH_SHORT);
+                        backToast.show();
+                        backPressedTime = System.currentTimeMillis();
+                    }
+                }
+            }
+        });
     }
 
     public ObdConnectionManager getObdManager() {
