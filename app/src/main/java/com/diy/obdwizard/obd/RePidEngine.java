@@ -11,6 +11,28 @@ import java.util.List;
 public class RePidEngine implements IObdDataSource {
     private final BluetoothConnection connection;
 
+    // State for performance timers
+    private boolean isTiming0To40 = false;
+    private long timer0To40StartMs = 0;
+    private double last0To40Time = 0.0;
+
+    private boolean isTiming0To60 = false;
+    private long timer0To60StartMs = 0;
+    private double last0To60Time = 0.0;
+
+    private boolean isTiming0To80 = false;
+    private long timer0To80StartMs = 0;
+    private double last0To80Time = 0.0;
+
+    private boolean isTiming0To100 = false;
+    private long timer0To100StartMs = 0;
+    private double last0To100Time = 0.0;
+
+    // State for integration (Fuel/Distance)
+    private long lastPollTimeMs = 0;
+    private double sessionFuelConsumedLiters = 0.0;
+    private double sessionDistanceKm = 0.0;
+
     public RePidEngine(BluetoothConnection connection) {
         this.connection = connection;
     }
@@ -56,20 +78,107 @@ public class RePidEngine implements IObdDataSource {
     @Override
     public MotorcycleTelemetry pollTelemetry() throws IOException {
         MotorcycleTelemetry data = new MotorcycleTelemetry();
-        // Mode 01 PID 0C: Engine RPM
+        // Base PIDs
         String rpmRaw = connection.sendCommand("010C");
-        // Mode 01 PID 0D: Vehicle Speed (km/h)
         String speedRaw = connection.sendCommand("010D");
-        // Mode 01 PID 11: Throttle Position (%)
         String throttleRaw = connection.sendCommand("0111");
-        // Mode 01 PID 05: Engine Coolant Temperature (°C)
         String tempRaw = connection.sendCommand("0105");
+
+        // New PIDs
+        String mapRaw = connection.sendCommand("010B");
+        String iatRaw = connection.sendCommand("010F");
+        String o2VoltsRaw = connection.sendCommand("0114");
+        String controlVoltsRaw = connection.sendCommand("0142");
+        String loadRaw = connection.sendCommand("0104");
+        String timingRaw = connection.sendCommand("010E");
+        String runTimeRaw = connection.sendCommand("011F");
+        String distMilRaw = connection.sendCommand("0121");
 
         data.rpm = ObdParser.parseRpm(rpmRaw);
         data.speedKmh = ObdParser.parseSpeed(speedRaw);
         data.throttlePercent = ObdParser.parseThrottle(throttleRaw);
         data.engineTempC = ObdParser.parseTemp(tempRaw);
         data.calculatedGear = ObdParser.calculateGear(data.speedKmh, data.rpm);
+
+        data.mapKpa = ObdParser.parseMap(mapRaw);
+        data.iatTempC = ObdParser.parseIat(iatRaw);
+        data.o2Voltage = ObdParser.parseO2Voltage(o2VoltsRaw);
+        data.controlModuleVoltage = ObdParser.parseControlModuleVoltage(controlVoltsRaw);
+        data.engineLoadPercent = ObdParser.parseEngineLoad(loadRaw);
+        data.timingAdvance = ObdParser.parseTimingAdvance(timingRaw);
+        data.runTimeSeconds = ObdParser.parseRunTime(runTimeRaw);
+        data.distanceWithMilKm = ObdParser.parseDistanceMil(distMilRaw);
+
+        // Calculate derived fields
+        data.fuelEconomyKml = ObdParser.calculateFuelEconomy(data.rpm, data.mapKpa, data.iatTempC, data.speedKmh);
+        data.isBatteryChargingPoor = ObdParser.checkBatteryHealth(data.rpm, data.controlModuleVoltage);
+        data.mixtureStatus = ObdParser.evaluateMixture(data.o2Voltage);
+
+        // Fuel Consumption and Distance Integration
+        long currentTimeMs = System.currentTimeMillis();
+        long dtMs = (lastPollTimeMs == 0) ? 0 : (currentTimeMs - lastPollTimeMs);
+        lastPollTimeMs = currentTimeMs;
+
+        // Cap dt to 2 seconds to avoid massive jumps if app paused or polling delayed
+        if (dtMs > 0 && dtMs < 2000) {
+            double dtHours = dtMs / 3600000.0;
+            double fuelFlowLph = ObdParser.calculateFuelFlowLph(data.rpm, data.mapKpa, data.iatTempC);
+            sessionFuelConsumedLiters += fuelFlowLph * dtHours;
+            sessionDistanceKm += data.speedKmh * dtHours;
+        }
+
+        data.sessionFuelConsumedLiters = sessionFuelConsumedLiters;
+        if (sessionFuelConsumedLiters > 0.001) {
+            data.averageFuelEconomyKml = sessionDistanceKm / sessionFuelConsumedLiters;
+        } else {
+            data.averageFuelEconomyKml = 0.0;
+        }
+
+        // 0-40 Timer Logic
+        if (data.speedKmh == 0) {
+            isTiming0To40 = false;
+            isTiming0To60 = false;
+            isTiming0To80 = false;
+            isTiming0To100 = false;
+        }
+
+        if (data.speedKmh > 0 && data.speedKmh < 40 && !isTiming0To40) {
+            isTiming0To40 = true;
+            timer0To40StartMs = System.currentTimeMillis();
+        } else if (data.speedKmh >= 40 && isTiming0To40) {
+            isTiming0To40 = false;
+            last0To40Time = (System.currentTimeMillis() - timer0To40StartMs) / 1000.0;
+        }
+
+        if (data.speedKmh > 0 && data.speedKmh < 60 && !isTiming0To60) {
+            isTiming0To60 = true;
+            timer0To60StartMs = System.currentTimeMillis();
+        } else if (data.speedKmh >= 60 && isTiming0To60) {
+            isTiming0To60 = false;
+            last0To60Time = (System.currentTimeMillis() - timer0To60StartMs) / 1000.0;
+        }
+
+        if (data.speedKmh > 0 && data.speedKmh < 80 && !isTiming0To80) {
+            isTiming0To80 = true;
+            timer0To80StartMs = System.currentTimeMillis();
+        } else if (data.speedKmh >= 80 && isTiming0To80) {
+            isTiming0To80 = false;
+            last0To80Time = (System.currentTimeMillis() - timer0To80StartMs) / 1000.0;
+        }
+
+        if (data.speedKmh > 0 && data.speedKmh < 100 && !isTiming0To100) {
+            isTiming0To100 = true;
+            timer0To100StartMs = System.currentTimeMillis();
+        } else if (data.speedKmh >= 100 && isTiming0To100) {
+            isTiming0To100 = false;
+            last0To100Time = (System.currentTimeMillis() - timer0To100StartMs) / 1000.0;
+        }
+
+        data.zeroToFortyTime = last0To40Time;
+        data.zeroToSixtyTime = last0To60Time;
+        data.zeroToEightyTime = last0To80Time;
+        data.zeroToHundredTime = last0To100Time;
+
         return data;
     }
 

@@ -7,14 +7,26 @@ public class MotorcycleTelemetry {
     public double throttlePercent = 0.0;
     public String calculatedGear = "N";
 
-    public MotorcycleTelemetry() {
-    }
+    public int mapKpa = 0;
+    public int iatTempC = 0;
+    public double o2Voltage = 0.0;
+    public double controlModuleVoltage = 0.0;
+    public double engineLoadPercent = 0.0;
+    public double timingAdvance = 0.0;
+    public int runTimeSeconds = 0;
+    public int distanceWithMilKm = 0;
 
-    public MotorcycleTelemetry(int rpm, int speedKmh, int engineTempC, double throttlePercent, String calculatedGear) {
-        this.rpm = rpm;
-        this.speedKmh = speedKmh;
-        this.engineTempC = engineTempC;
-        this.throttlePercent = throttlePercent;
-        this.calculatedGear = calculatedGear;
+    // Derived / Calculated fields
+    public double fuelEconomyKml = 0.0;
+    public double averageFuelEconomyKml = 0.0;
+    public double sessionFuelConsumedLiters = 0.0;
+    public boolean isBatteryChargingPoor = false;
+    public String mixtureStatus = "-";
+    public double zeroToFortyTime = 0.0;
+    public double zeroToSixtyTime = 0.0;
+    public double zeroToEightyTime = 0.0;
+    public double zeroToHundredTime = 0.0;
+
+    public MotorcycleTelemetry() {
     }
 }

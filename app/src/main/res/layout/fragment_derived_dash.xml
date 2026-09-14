@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_bg"
+    android:fillViewport="true"
+    android:padding="16dp">
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alignmentMode="alignBounds"
+        android:columnCount="3"
+        android:useDefaultMargins="true">
+
+        <!-- ROW 1 -->
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="GEAR" />
+
+            <TextView
+                android:id="@+id/txtGear"
+                style="@style/DashboardValue"
+                android:text="N" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="ECONOMY" />
+
+            <TextView
+                android:id="@+id/txtEcon"
+                style="@style/DashboardValue"
+                android:text="0.0 km/L" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="AVG ECON" />
+
+            <TextView
+                android:id="@+id/txtAvgEcon"
+                style="@style/DashboardValue"
+                android:text="0.0 km/L" />
+        </LinearLayout>
+
+        <!-- ROW 2 -->
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="FUEL USED" />
+
+            <TextView
+                android:id="@+id/txtFuelUsed"
+                style="@style/DashboardValue"
+                android:text="0.0 L" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="MIXTURE" />
+
+            <TextView
+                android:id="@+id/txtMixture"
+                style="@style/DashboardValue"
+                android:text="-" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="SHIFT" />
+
+            <TextView
+                android:id="@+id/txtShift"
+                style="@style/DashboardValue"
+                android:text="-" />
+        </LinearLayout>
+
+        <!-- ROW 3: Timers -->
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="0-40 KM/H" />
+
+            <TextView
+                android:id="@+id/txt0to40"
+                style="@style/DashboardValue"
+                android:text="- s" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="0-60 KM/H" />
+
+            <TextView
+                android:id="@+id/txt0to60"
+                style="@style/DashboardValue"
+                android:text="- s" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="0-80 KM/H" />
+
+            <TextView
+                android:id="@+id/txt0to80"
+                style="@style/DashboardValue"
+                android:text="- s" />
+        </LinearLayout>
+
+        <!-- ROW 4 -->
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="0-100 KM/H" />
+
+            <TextView
+                android:id="@+id/txt0to100"
+                style="@style/DashboardValue"
+                android:text="- s" />
+        </LinearLayout>
+
+    </GridLayout>
+</ScrollView>
