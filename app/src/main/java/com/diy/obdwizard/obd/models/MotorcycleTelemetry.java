@@ -15,6 +15,7 @@ public class MotorcycleTelemetry {
     public double timingAdvance = 0.0;
     public int runTimeSeconds = 0;
     public int distanceWithMilKm = 0;
+    public double fuelLevelPercent = -1.0; // PID 012F Fuel Tank Level Input (-1.0 if unsupported)
 
     // Derived / Calculated fields
     public double fuelEconomyKml = 0.0;

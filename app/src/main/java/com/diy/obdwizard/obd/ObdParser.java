@@ -229,6 +229,24 @@ public class ObdParser {
     }
 
     /**
+     * Mode 01 PID 2F (Fuel Tank Level Input) in percentage (0% to 100%).
+     * Returns -1.0 if unsupported or unavailable.
+     */
+    public static double parseFuelLevel(String raw) {
+        if (raw == null) return -1.0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("412F");
+        if (idx != -1 && clean.length() >= idx + 6) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                return (a * 100.0) / 255.0;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return -1.0;
+    }
+
+    /**
      * Calculates fuel flow in Liters per Hour (L/h).
      */
     public static double calculateFuelFlowLph(int rpm, int mapKpa, int iatC) {

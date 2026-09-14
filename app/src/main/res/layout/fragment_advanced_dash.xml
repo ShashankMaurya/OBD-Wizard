@@ -21,12 +21,12 @@
 
             <TextView
                 style="@style/DashboardLabel"
-                android:text="GEAR" />
+                android:text="MAP" />
 
             <TextView
-                android:id="@+id/txtGear"
+                android:id="@+id/txtMap"
                 style="@style/DashboardValue"
-                android:text="N" />
+                android:text="0 kPa" />
         </LinearLayout>
 
         <LinearLayout
@@ -36,14 +36,76 @@
 
             <TextView
                 style="@style/DashboardLabel"
-                android:text="ECONOMY" />
+                android:text="IAT" />
 
             <TextView
-                android:id="@+id/txtEcon"
+                android:id="@+id/txtIat"
                 style="@style/DashboardValue"
-                android:text="0.0 km/L" />
+                android:text="0 °C" />
         </LinearLayout>
 
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="LOAD" />
+
+            <TextView
+                android:id="@+id/txtLoad"
+                style="@style/DashboardValue"
+                android:text="0 %" />
+        </LinearLayout>
+
+        <!-- ROW 2 -->
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="O2 VOLT" />
+
+            <TextView
+                android:id="@+id/txtO2"
+                style="@style/DashboardValue"
+                android:text="0.00 V" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="TIMING" />
+
+            <TextView
+                android:id="@+id/txtTiming"
+                style="@style/DashboardValue"
+                android:text="0.0°" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/DashboardCard"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1">
+
+            <TextView
+                style="@style/DashboardLabel"
+                android:text="MIL DIST" />
+
+            <TextView
+                android:id="@+id/txtMilDist"
+                style="@style/DashboardValue"
+                android:text="0 km" />
+        </LinearLayout>
+
+        <!-- ROW 3 -->
         <LinearLayout
             style="@style/DashboardCard"
             android:layout_rowWeight="1"
@@ -59,7 +121,6 @@
                 android:text="0.0 km/L" />
         </LinearLayout>
 
-        <!-- ROW 2 -->
         <LinearLayout
             style="@style/DashboardCard"
             android:layout_rowWeight="1"
@@ -72,7 +133,7 @@
             <TextView
                 android:id="@+id/txtFuelUsed"
                 style="@style/DashboardValue"
-                android:text="0.0 L" />
+                android:text="0.00 L" />
         </LinearLayout>
 
         <LinearLayout
@@ -90,6 +151,7 @@
                 android:text="-" />
         </LinearLayout>
 
+        <!-- ROW 4 -->
         <LinearLayout
             style="@style/DashboardCard"
             android:layout_rowWeight="1"
@@ -105,7 +167,6 @@
                 android:text="-" />
         </LinearLayout>
 
-        <!-- ROW 3: Timers -->
         <LinearLayout
             style="@style/DashboardCard"
             android:layout_rowWeight="1"
@@ -136,6 +197,7 @@
                 android:text="- s" />
         </LinearLayout>
 
+        <!-- ROW 5 -->
         <LinearLayout
             style="@style/DashboardCard"
             android:layout_rowWeight="1"
@@ -151,7 +213,6 @@
                 android:text="- s" />
         </LinearLayout>
 
-        <!-- ROW 4 -->
         <LinearLayout
             style="@style/DashboardCard"
             android:layout_rowWeight="1"

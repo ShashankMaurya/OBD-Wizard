@@ -93,6 +93,7 @@ public class RePidEngine implements IObdDataSource {
         String timingRaw = connection.sendCommand("010E");
         String runTimeRaw = connection.sendCommand("011F");
         String distMilRaw = connection.sendCommand("0121");
+        String fuelLevelRaw = connection.sendCommand("012F");
 
         data.rpm = ObdParser.parseRpm(rpmRaw);
         data.speedKmh = ObdParser.parseSpeed(speedRaw);
@@ -108,6 +109,7 @@ public class RePidEngine implements IObdDataSource {
         data.timingAdvance = ObdParser.parseTimingAdvance(timingRaw);
         data.runTimeSeconds = ObdParser.parseRunTime(runTimeRaw);
         data.distanceWithMilKm = ObdParser.parseDistanceMil(distMilRaw);
+        data.fuelLevelPercent = ObdParser.parseFuelLevel(fuelLevelRaw);
 
         // Calculate derived fields
         data.fuelEconomyKml = ObdParser.calculateFuelEconomy(data.rpm, data.mapKpa, data.iatTempC, data.speedKmh);
