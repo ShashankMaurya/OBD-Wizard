@@ -62,7 +62,7 @@ public class DerivedDashFragment extends Fragment implements TelemetryUpdateList
             txt0to100.setText(data.zeroToHundredTime > 0 ? String.format(Locale.US, "%.1f s", data.zeroToHundredTime) : "- s");
 
             if (getContext() != null) {
-                if (data.rpm > 5500) {
+                if (data.rpm > 3500) {
                     txtShift.setText("SHIFT UP!");
                     txtShift.setTextColor(requireContext().getColor(R.color.accent_red));
                 } else {
