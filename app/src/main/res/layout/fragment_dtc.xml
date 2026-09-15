@@ -7,14 +7,47 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <Button
-        android:id="@+id/btnDtcScan"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:backgroundTint="@color/btn_danger"
-        android:text="Scan &amp; Clear DTCs"
-        android:textColor="@color/text_white"
-        android:textStyle="bold" />
+        android:layout_height="56dp">
+
+        <Button
+            android:id="@+id/btnDtcScan"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:backgroundTint="@color/btn_danger"
+            android:text="Scan &amp; Clear DTCs"
+            android:textColor="@color/text_white"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/layoutLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/progressDtc"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:indeterminate="true"
+                android:indeterminateTint="#FFFFFF" />
+
+            <TextView
+                android:id="@+id/txtLoading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="SCANNING ECU..."
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </FrameLayout>
 
     <Button
         android:id="@+id/btnDtcDictionary"

@@ -26,10 +26,10 @@ import com.diy.obdwizard.obd.interfaces.ObdManagerCallbacks;
 import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
 import com.diy.obdwizard.ui.AboutFragment;
-import com.diy.obdwizard.ui.DerivedDashFragment;
+import com.diy.obdwizard.ui.AdvancedDashFragment;
+import com.diy.obdwizard.ui.DashboardFragment;
 import com.diy.obdwizard.ui.DtcFragment;
 import com.diy.obdwizard.ui.HomeFragment;
-import com.diy.obdwizard.ui.StandardDashFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
@@ -69,12 +69,15 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
 
+            // Handle navigation item switching between Home, Default Dashboard, Advanced Dashboard, DTCs, and About
             if (itemId == R.id.nav_home) {
                 selectedFragment = new HomeFragment();
-            } else if (itemId == R.id.nav_standard_dashboard) {
-                selectedFragment = new StandardDashFragment();
-            } else if (itemId == R.id.nav_derived_dashboard) {
-                selectedFragment = new DerivedDashFragment();
+            } else if (itemId == R.id.nav_dashboard) {
+                // Primary Default Dashboard with central RPM arc gauge & futuristic card layout
+                selectedFragment = new DashboardFragment();
+            } else if (itemId == R.id.nav_advanced_dashboard) {
+                // Secondary Advanced Dashboard for secondary ECU telemetry & timers
+                selectedFragment = new AdvancedDashFragment();
             } else if (itemId == R.id.nav_dtc) {
                 selectedFragment = new DtcFragment();
             } else if (itemId == R.id.nav_about) {
@@ -218,10 +221,16 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
     }
 
     public void openDtcDialog() {
+        openDtcDialog(null, null);
+    }
+
+    public void openDtcDialog(Runnable onStart, Runnable onFinish) {
+        if (onStart != null) runOnUiThread(onStart);
         obdManager.readDtc(new ObdManagerCallbacks.DtcReadListener() {
             @Override
             public void onDtcRead(List<String> codes) {
                 runOnUiThread(() -> {
+                    if (onFinish != null) onFinish.run();
                     StringBuilder sb = new StringBuilder();
                     if (codes.isEmpty()) {
                         sb.append("No Fault Codes Found (ECU Clean)");
@@ -247,7 +256,10 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
 
             @Override
             public void onError(String error) {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    if (onFinish != null) onFinish.run();
+                    Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }

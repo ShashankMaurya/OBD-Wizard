@@ -1,7 +1,8 @@
 package com.diy.obdwizard.obd;
 
 /**
- * Utility class for parsing raw OBD-II PID responses and calculating derived values.
+ * Utility class for parsing raw OBD-II PID responses and calculating derived telemetry values.
+ * Standard OBD-II Mode 01 PID formulas are implemented based on the SAE J1979 standard.
  */
 public class ObdParser {
 
@@ -10,7 +11,11 @@ public class ObdParser {
     }
 
     /**
-     * Parses the raw OBD-II response for Mode 01 PID 0C (Engine RPM).
+     * Parses Mode 01 PID 0C (Engine RPM).
+     * <p>
+     * Formula: ((A * 256) + B) / 4
+     * A and B are the first and second bytes of the data response.
+     * Output Range: 0 to 16,383.75 RPM.
      */
     public static int parseRpm(String raw) {
         if (raw == null) return 0;
@@ -28,7 +33,11 @@ public class ObdParser {
     }
 
     /**
-     * Parses the raw OBD-II response for Mode 01 PID 0D (Vehicle Speed in km/h).
+     * Parses Mode 01 PID 0D (Vehicle Speed).
+     * <p>
+     * Formula: A
+     * A is the single data byte representing speed in km/h.
+     * Output Range: 0 to 255 km/h.
      */
     public static int parseSpeed(String raw) {
         if (raw == null) return 0;
@@ -44,7 +53,11 @@ public class ObdParser {
     }
 
     /**
-     * Parses the raw OBD-II response for Mode 01 PID 11 (Throttle Position percentage).
+     * Parses Mode 01 PID 11 (Throttle Position).
+     * <p>
+     * Formula: (A * 100) / 255
+     * A is the data byte. Represents the percentage of throttle opening.
+     * Output Range: 0% to 100%.
      */
     public static double parseThrottle(String raw) {
         if (raw == null) return 0.0;
@@ -61,7 +74,11 @@ public class ObdParser {
     }
 
     /**
-     * Parses the raw OBD-II response for Mode 01 PID 05 (Engine Coolant Temperature in °C).
+     * Parses Mode 01 PID 05 (Engine Coolant Temperature).
+     * <p>
+     * Formula: A - 40
+     * A is the data byte.
+     * Output Range: -40°C to 215°C.
      */
     public static int parseTemp(String raw) {
         if (raw == null) return 0;
@@ -78,7 +95,17 @@ public class ObdParser {
     }
 
     /**
-     * Calculates the estimated gear based on vehicle speed (km/h) and engine RPM.
+     * Calculates the estimated gear based on the ratio between Vehicle Speed and Engine RPM.
+     * <p>
+     * Formula: Ratio = (Speed_kmh / RPM) * 1000
+     * Tightly calibrated for Royal Enfield 350 gear ratios.
+     * Ratio bands:
+     * - 6.0 - 10.0: 1st Gear
+     * - 10.0 - 15.5: 2nd Gear
+     * - 15.5 - 21.0: 3rd Gear
+     * - 21.0 - 27.5: 4th Gear
+     * - > 27.5: 5th Gear
+     * - Speed < 3 or RPM < 800: Neutral (N)
      */
     public static String calculateGear(int speedKmh, int rpm) {
         if (speedKmh < 3 || rpm < 800) return "N";
@@ -92,7 +119,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 0B (Intake Manifold Absolute Pressure - MAP) in kPa.
+     * Parses Mode 01 PID 0B (Intake Manifold Absolute Pressure - MAP).
+     * <p>
+     * Formula: A
+     * A is the data byte representing pressure in kPa.
+     * Output Range: 0 to 255 kPa.
      */
     public static int parseMap(String raw) {
         if (raw == null) return 0;
@@ -108,7 +139,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 0F (Intake Air Temperature - IAT) in °C.
+     * Parses Mode 01 PID 0F (Intake Air Temperature - IAT).
+     * <p>
+     * Formula: A - 40
+     * A is the data byte.
+     * Output Range: -40°C to 215°C.
      */
     public static int parseIat(String raw) {
         if (raw == null) return 0;
@@ -124,7 +159,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 14 (O2 Sensor Bank 1 Sensor 1 Voltage) in Volts.
+     * Parses Mode 01 PID 14 (O2 Sensor Voltage).
+     * <p>
+     * Formula: A / 200
+     * A is the data byte.
+     * Output Range: 0 to 1.275 Volts.
      */
     public static double parseO2Voltage(String raw) {
         if (raw == null) return 0.0;
@@ -141,7 +180,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 42 (Control Module Voltage) in Volts.
+     * Parses Mode 01 PID 42 (Control Module Voltage).
+     * <p>
+     * Formula: ((A * 256) + B) / 1000
+     * Represents the voltage at the ECU/Battery.
+     * Output Range: 0 to 65.535 Volts.
      */
     public static double parseControlModuleVoltage(String raw) {
         if (raw == null) return 0.0;
@@ -159,7 +202,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 04 (Calculated Engine Load) in percentage.
+     * Parses Mode 01 PID 04 (Calculated Engine Load).
+     * <p>
+     * Formula: (A * 100) / 255
+     * A is the data byte.
+     * Output Range: 0% to 100%.
      */
     public static double parseEngineLoad(String raw) {
         if (raw == null) return 0.0;
@@ -176,7 +223,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 0E (Ignition Timing Advance) in degrees.
+     * Parses Mode 01 PID 0E (Ignition Timing Advance).
+     * <p>
+     * Formula: (A / 2) - 64
+     * A is the data byte.
+     * Output Range: -64 to 63.5 degrees.
      */
     public static double parseTimingAdvance(String raw) {
         if (raw == null) return 0.0;
@@ -193,7 +244,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 1F (Run Time Since Engine Start) in seconds.
+     * Parses Mode 01 PID 1F (Run Time Since Engine Start).
+     * <p>
+     * Formula: (A * 256) + B
+     * A and B are bytes representing total seconds.
+     * Output Range: 0 to 65,535 seconds.
      */
     public static int parseRunTime(String raw) {
         if (raw == null) return 0;
@@ -211,7 +266,11 @@ public class ObdParser {
     }
 
     /**
-     * Mode 01 PID 21 (Distance Traveled with MIL on) in km.
+     * Parses Mode 01 PID 21 (Distance Traveled with MIL on).
+     * <p>
+     * Formula: (A * 256) + B
+     * A and B are bytes representing distance in km.
+     * Output Range: 0 to 65,535 km.
      */
     public static int parseDistanceMil(String raw) {
         if (raw == null) return 0;
@@ -229,7 +288,39 @@ public class ObdParser {
     }
 
     /**
-     * Calculates fuel flow in Liters per Hour (L/h).
+     * Parses Mode 01 PID 2F (Fuel Tank Level Input).
+     * <p>
+     * Formula: (A * 100) / 255
+     * Output Range: 0% to 100%. Returns -1.0 if unavailable.
+     */
+    public static double parseFuelLevel(String raw) {
+        if (raw == null) return -1.0;
+        String clean = raw.replaceAll("\\s+", "");
+        int idx = clean.indexOf("412F");
+        if (idx != -1 && clean.length() >= idx + 6) {
+            try {
+                int a = Integer.parseInt(clean.substring(idx + 4, idx + 6), 16);
+                return (a * 100.0) / 255.0;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return -1.0;
+    }
+
+    /**
+     * Calculates the estimated Fuel Flow in Liters per Hour (L/h) using the Speed-Density method.
+     * <p>
+     * Core Algorithm (Speed Density Approximation):
+     * 1. Intake Air Volume Flow Rate (IVR) = (RPM * MAP / 2) * Displacement * VolumetricEfficiency
+     * 2. Mass Air Flow (MAF) = (IVR * MolarMassOfAir) / (R * Temp_K)
+     * 3. Fuel Mass Flow = MAF / AFR (Air-Fuel Ratio, typically 14.7)
+     * 4. Fuel Volume Flow = FuelMassFlow / FuelDensity
+     * <p>
+     * Variables used for RE 350:
+     * - DISP_L = 0.349 (349cc displacement)
+     * - VE = 0.80 (80% Volumetric Efficiency estimate)
+     * - AFR = 14.7 (Stoichiometric ratio for gasoline)
+     * - GAS_DENSITY = 740.0 g/L
      */
     public static double calculateFuelFlowLph(int rpm, int mapKpa, int iatC) {
         if (rpm == 0 || mapKpa == 0) return 0.0;
@@ -242,7 +333,8 @@ public class ObdParser {
         double tempK = iatC + 273.15;
         if (tempK == 0) return 0.0;
 
-        // MAF (g/s) approximation using the Ideal Gas Law and Speed Density method
+        // MAF (g/s) approximation using the Ideal Gas Law: PV = nRT -> n = PV/RT
+        // 3.484 is the simplified constant combining molar mass of air and gas constant.
         double maf = (rpm * mapKpa / tempK) * (DISP_L * VE / 120.0) * 3.484;
 
         double fuelGs = maf / AFR;
@@ -251,8 +343,9 @@ public class ObdParser {
     }
 
     /**
-     * Calculates instant fuel economy (km/L) using RPM, MAP, IAT, and Speed.
-     * Assumes 349cc displacement and ~80% volumetric efficiency.
+     * Calculates instantaneous fuel economy in km/L.
+     * <p>
+     * Formula: Speed_kmh / FuelFlow_Lph
      */
     public static double calculateFuelEconomy(int rpm, int mapKpa, int iatC, int speedKmh) {
         if (speedKmh == 0) return 0.0;
@@ -262,14 +355,22 @@ public class ObdParser {
     }
 
     /**
-     * Checks if the battery charging system might be failing (e.g., Stator issue).
+     * Checks battery/charging health status.
+     * <p>
+     * Logic: If engine is above 1500 RPM (charging range) but voltage is below 13.5V, 
+     * it suggests the stator or regulator/rectifier is underperforming.
      */
     public static boolean checkBatteryHealth(int rpm, double voltage) {
         return rpm > 1500 && voltage > 0 && voltage < 13.5;
     }
 
     /**
-     * Estimates Lean/Rich mixture state based on O2 sensor voltage.
+     * Evaluates Air-Fuel Mixture status based on O2 sensor voltage.
+     * <p>
+     * Logic:
+     * - < 0.3V: LEAN (Excess air)
+     * - > 0.6V: RICH (Excess fuel)
+     * - 0.3V - 0.6V: OPTIMAL
      */
     public static String evaluateMixture(double o2Volts) {
         if (o2Volts <= 0.0) return "-";
