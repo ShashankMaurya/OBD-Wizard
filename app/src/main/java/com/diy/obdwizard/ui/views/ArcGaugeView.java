@@ -160,7 +160,8 @@ public class ArcGaugeView extends View {
 
         // 5. Draw Retro Pointer Shaft with laser core & metallic hub
         float pointerAngleDeg = START_ANGLE + fraction * SWEEP_ANGLE;
-        pointerDrawer.drawPointer(canvas, cx, cy, radius, strokeWidth, pointerAngleDeg, activeColor);
+        float tipR = radius - strokeWidth * 0.2f;
+        pointerDrawer.drawPointer(canvas, cx, cy, radius, tipR, strokeWidth, pointerAngleDeg, activeColor);
 
         // 6. Draw center digital readout value string below pivot hub
         valueTextPaint.setTextSize(radius * 0.38f);

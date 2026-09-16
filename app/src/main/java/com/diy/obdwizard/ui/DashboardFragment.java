@@ -1,11 +1,15 @@
 package com.diy.obdwizard.ui;
 
+import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import com.diy.obdwizard.R;
 import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
+import com.diy.obdwizard.trip.TripManager;
+import com.diy.obdwizard.trip.TripRecord;
 import com.diy.obdwizard.ui.views.ArcGaugeView;
 import com.diy.obdwizard.ui.views.BikeGearView;
 import com.diy.obdwizard.ui.views.RpmSpeedGaugeView;
@@ -34,6 +40,7 @@ import java.util.Locale;
  *     <li>Engine Runtime digital timer card.</li>
  *     <li>Session Fuel Consumed digital card.</li>
  *     <li>Instant and Average Fuel Economy consumption cards.</li>
+ *     <li>Trip Recording control button.</li>
  * </ul>
  */
 public class DashboardFragment extends Fragment implements TelemetryUpdateListener {
@@ -48,6 +55,9 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
     private TextView txtFuelConsumedValue;
     private TextView txtEconInstValue;
     private TextView txtEconAvgValue;
+    private Button btnTripAction;
+
+    private MotorcycleTelemetry lastData;
 
     @Nullable
     @Override
@@ -65,8 +75,44 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         txtFuelConsumedValue = view.findViewById(R.id.txtFuelConsumedValue);
         txtEconInstValue = view.findViewById(R.id.txtEconInstValue);
         txtEconAvgValue = view.findViewById(R.id.txtEconAvgValue);
+        btnTripAction = view.findViewById(R.id.btnTripAction);
+
+        updateTripButtonState();
+
+        btnTripAction.setOnClickListener(v -> {
+            TripManager tm = TripManager.getInstance();
+            if (tm.isRecording()) {
+                TripRecord record = tm.stopTrip(lastData != null ? lastData : new MotorcycleTelemetry());
+                updateTripButtonState();
+                if (record != null) {
+                    Intent intent = new Intent(getContext(), TripSummaryActivity.class);
+                    intent.putExtra("TRIP_RECORD", record);
+                    startActivity(intent);
+                }
+            } else {
+                if (lastData == null) {
+                    Toast.makeText(getContext(), "Wait for telemetry data...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                tm.startTrip(lastData);
+                updateTripButtonState();
+                Toast.makeText(getContext(), "Trip Recording Started", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
+    }
+
+    private void updateTripButtonState() {
+        if (TripManager.getInstance().isRecording()) {
+            btnTripAction.setText("STOP TRIP");
+            btnTripAction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF3D00")));
+            btnTripAction.setTextColor(Color.WHITE);
+        } else {
+            btnTripAction.setText("START TRIP");
+            btnTripAction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00E676")));
+            btnTripAction.setTextColor(Color.BLACK);
+        }
     }
 
     /**
@@ -77,6 +123,9 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
      */
     @Override
     public void onTelemetryData(MotorcycleTelemetry data) {
+        this.lastData = data;
+        TripManager.getInstance().recordData(data);
+        
         if (getActivity() == null) return;
         getActivity().runOnUiThread(() -> {
             if (rpmSpeedGauge == null) return;

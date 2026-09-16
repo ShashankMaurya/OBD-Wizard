@@ -285,9 +285,24 @@ public class RpmSpeedGaugeView extends View {
         speedUnitPaint.setTextSize(radius * 0.13f);
         canvas.drawText("KM/H", cx, cy + radius * 0.08f, speedUnitPaint);
 
-        // 6. Draw Retro Pointer Shaft with laser core & metallic hub via shared RetroPointerDrawer
-        float pointerAngleDeg = START_ANGLE + rpmFraction * SWEEP_ANGLE;
-        pointerDrawer.drawPointer(canvas, cx, cy + radius * 0.28f, radius, strokeWidth, pointerAngleDeg, Color.parseColor("#FF1744"));
+        // 6. Draw Corrected Retro Pointer with Offset Pivot Geometry
+        // We calculate the target point on the arc center line first, then compute angle from offset hub.
+        float targetAngleDeg = START_ANGLE + rpmFraction * SWEEP_ANGLE;
+        double targetRad = Math.toRadians(targetAngleDeg);
+
+        // Target tip point on the arc track (slightly inside the outer edge)
+        float tipR_from_center = radius - strokeWidth * 0.2f;
+        float targetX = (float) (cx + tipR_from_center * Math.cos(targetRad));
+        float targetY = (float) (cy + tipR_from_center * Math.sin(targetRad));
+
+        float hubX = cx;
+        float hubY = cy + radius * 0.28f;
+
+        // Calculate angle and distance from the offset hub to the target arc point
+        float correctedPointerAngle = (float) Math.toDegrees(Math.atan2(targetY - hubY, targetX - hubX));
+        float needleDist = (float) Math.sqrt(Math.pow(targetX - hubX, 2) + Math.pow(targetY - hubY, 2));
+
+        pointerDrawer.drawPointer(canvas, hubX, hubY, radius, needleDist, strokeWidth, correctedPointerAngle, Color.parseColor("#FF1744"));
 
         // 7. Draw bottom status warning icons
         drawStatusIcons(canvas, cx, cy + radius * 0.58f, radius * 0.12f);
