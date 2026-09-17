@@ -25,11 +25,11 @@ import com.diy.obdwizard.obd.ObdConnectionManager;
 import com.diy.obdwizard.obd.interfaces.ObdManagerCallbacks;
 import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
-import com.diy.obdwizard.ui.AboutFragment;
-import com.diy.obdwizard.ui.AdvancedDashFragment;
-import com.diy.obdwizard.ui.DashboardFragment;
-import com.diy.obdwizard.ui.DtcFragment;
-import com.diy.obdwizard.ui.HomeFragment;
+import com.diy.obdwizard.ui.fragments.AboutFragment;
+import com.diy.obdwizard.ui.fragments.AdvancedDashFragment;
+import com.diy.obdwizard.ui.fragments.DashboardFragment;
+import com.diy.obdwizard.ui.fragments.DtcFragment;
+import com.diy.obdwizard.ui.fragments.HomeFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.diy.obdwizard.ui;
+package com.diy.obdwizard.ui.fragments;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -20,6 +20,7 @@ import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
 import com.diy.obdwizard.trip.TripManager;
 import com.diy.obdwizard.trip.TripRecord;
+import com.diy.obdwizard.ui.activities.TripSummaryActivity;
 import com.diy.obdwizard.ui.views.ArcGaugeView;
 import com.diy.obdwizard.ui.views.BikeGearView;
 import com.diy.obdwizard.ui.views.RpmSpeedGaugeView;

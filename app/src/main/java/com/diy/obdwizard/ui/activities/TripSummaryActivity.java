@@ -1,4 +1,4 @@
-package com.diy.obdwizard.ui;
+package com.diy.obdwizard.ui.activities;
 
 import android.graphics.Color;
 import android.os.Bundle;

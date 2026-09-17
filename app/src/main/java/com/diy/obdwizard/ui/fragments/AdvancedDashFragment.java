@@ -1,4 +1,4 @@
-package com.diy.obdwizard.ui;
+package com.diy.obdwizard.ui.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
