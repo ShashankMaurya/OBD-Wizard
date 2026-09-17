@@ -40,12 +40,22 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         TripRecord trip = trips.get(position);
         holder.txtDate.setText(dateFormat.format(new Date(trip.startTimeMs)));
 
-        long durationMs = trip.endTimeMs - trip.startTimeMs;
-        long mins = durationMs / 60000;
-        holder.txtDuration.setText(mins + " mins");
+        long durationMs = trip.durationMs;
+        long sec = (durationMs / 1000) % 60;
+        long min = (durationMs / 60000) % 60;
+        long hr = (durationMs / 3600000);
 
+        String timeStr = (hr > 0)
+                ? String.format(Locale.US, "%02d:%02d:%02d", hr, min, sec)
+                : String.format(Locale.US, "%02d:%02d", min, sec);
+
+        String durationSummary = (hr > 0) ? hr + "h " + min + "m" : min + " mins";
+        holder.txtDuration.setText(durationSummary);
+        
         holder.txtDistance.setText(String.format(Locale.US, "%.1f", trip.totalDistanceKm));
-        holder.txtMaxSpeed.setText(String.valueOf(trip.maxSpeedKmh));
+
+        // Use the second slot for formatted duration (previously max speed)
+        holder.txtTime.setText(timeStr);
 
         holder.itemView.setOnClickListener(v -> listener.onTripClick(trip));
         holder.btnDelete.setOnClickListener(v -> {
@@ -68,7 +78,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtDate, txtDuration, txtDistance, txtMaxSpeed;
+        TextView txtDate, txtDuration, txtDistance, txtTime;
         ImageButton btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
@@ -76,7 +86,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
             txtDate = itemView.findViewById(R.id.txtTripDate);
             txtDuration = itemView.findViewById(R.id.txtTripDuration);
             txtDistance = itemView.findViewById(R.id.txtTripDistance);
-            txtMaxSpeed = itemView.findViewById(R.id.txtTripMaxSpeed);
+            txtTime = itemView.findViewById(R.id.txtTripTime);
             btnDelete = itemView.findViewById(R.id.btnDeleteTrip);
         }
     }

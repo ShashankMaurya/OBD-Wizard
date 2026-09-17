@@ -38,6 +38,7 @@ public class TripManager {
         if (!isRecording || currentTrip == null) return null;
 
         currentTrip.endTimeMs = System.currentTimeMillis();
+        currentTrip.durationMs = currentTrip.endTimeMs - currentTrip.startTimeMs;
         currentTrip.fuelConsumedL = finalData.sessionFuelConsumedLiters - startFuel;
 
         // Finalize stats
@@ -106,5 +107,9 @@ public class TripManager {
 
     public boolean isRecording() {
         return isRecording;
+    }
+
+    public long getStartTimeMs() {
+        return (currentTrip != null) ? currentTrip.startTimeMs : 0;
     }
 }

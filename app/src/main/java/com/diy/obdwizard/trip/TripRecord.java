@@ -14,6 +14,7 @@ public class TripRecord implements Serializable {
 
     public long startTimeMs;
     public long endTimeMs;
+    public long durationMs;
     public double totalDistanceKm;
     public double fuelConsumedL;
     public int maxSpeedKmh;

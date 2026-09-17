@@ -45,7 +45,7 @@ public class TripSummaryActivity extends AppCompatActivity {
 
         ((TextView) findViewById(R.id.txtSumDistance)).setText(String.format(Locale.US, "%.1f km", record.totalDistanceKm));
 
-        long durationSec = (record.endTimeMs - record.startTimeMs) / 1000;
+        long durationSec = record.durationMs / 1000;
         String durationStr = String.format(Locale.US, "%02d:%02d", durationSec / 60, durationSec % 60);
         ((TextView) findViewById(R.id.txtSumDuration)).setText(durationStr);
 

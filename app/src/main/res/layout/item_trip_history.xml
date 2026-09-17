@@ -84,10 +84,10 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/txtTripMaxSpeed"
+                android:id="@+id/txtTripTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="85"
+                android:text="15:20"
                 android:textColor="@color/accent_red"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -95,7 +95,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="MAX KPH"
+                android:text="DURATION"
                 android:textColor="@color/text_gray"
                 android:textSize="10sp" />
         </LinearLayout>
