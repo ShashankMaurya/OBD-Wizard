@@ -1,6 +1,7 @@
 package com.diy.obdwizard.trip.db;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
@@ -18,4 +19,7 @@ public interface TripDao {
 
     @Query("SELECT * FROM trips WHERE id = :id")
     TripRecord getTripById(long id);
+
+    @Delete
+    void delete(TripRecord trip);
 }

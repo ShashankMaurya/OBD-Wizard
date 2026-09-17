@@ -3,6 +3,7 @@ package com.diy.obdwizard.ui.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -47,6 +48,12 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         holder.txtMaxSpeed.setText(String.valueOf(trip.maxSpeedKmh));
 
         holder.itemView.setOnClickListener(v -> listener.onTripClick(trip));
+        holder.btnDelete.setOnClickListener(v -> {
+            int currentPos = holder.getBindingAdapterPosition();
+            if (currentPos != RecyclerView.NO_POSITION) {
+                listener.onTripDeleteClick(trips.get(currentPos), currentPos);
+            }
+        });
     }
 
     @Override
@@ -56,10 +63,13 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
 
     public interface OnTripClickListener {
         void onTripClick(TripRecord trip);
+
+        void onTripDeleteClick(TripRecord trip, int position);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtDate, txtDuration, txtDistance, txtMaxSpeed;
+        ImageButton btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -67,6 +77,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
             txtDuration = itemView.findViewById(R.id.txtTripDuration);
             txtDistance = itemView.findViewById(R.id.txtTripDistance);
             txtMaxSpeed = itemView.findViewById(R.id.txtTripMaxSpeed);
+            btnDelete = itemView.findViewById(R.id.btnDeleteTrip);
         }
     }
 }
