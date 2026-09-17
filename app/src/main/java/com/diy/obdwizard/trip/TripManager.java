@@ -1,11 +1,18 @@
 package com.diy.obdwizard.trip;
 
+import android.content.Context;
+
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
+import com.diy.obdwizard.trip.db.TripDatabase;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TripManager {
     private static TripManager instance;
     private TripRecord currentTrip;
     private boolean isRecording = false;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     // Integration helpers
     private double startFuel = 0;
@@ -27,7 +34,7 @@ public class TripManager {
         // For simplicity, we'll track the delta of sessionFuelConsumedLiters.
     }
 
-    public TripRecord stopTrip(MotorcycleTelemetry finalData) {
+    public TripRecord stopTrip(MotorcycleTelemetry finalData, Context context) {
         if (!isRecording || currentTrip == null) return null;
 
         currentTrip.endTimeMs = System.currentTimeMillis();
@@ -37,11 +44,6 @@ public class TripManager {
         if (!currentTrip.snapshots.isEmpty()) {
             long durationSec = (currentTrip.endTimeMs - currentTrip.startTimeMs) / 1000;
             if (durationSec > 0) {
-                // Approximate distance if we didn't track it explicitly
-                // In a real app, we'd integrate speed or use GPS.
-                // RePidEngine tracks sessionDistanceKm, so let's use that if possible.
-                // But MotorcycleTelemetry doesn't expose sessionDistanceKm. 
-                // Let's assume we can get it from the snapshots or average speed.
                 double totalSpeed = 0;
                 for (TripRecord.TelemetrySnapshot s : currentTrip.snapshots) {
                     totalSpeed += s.speed;
@@ -54,6 +56,14 @@ public class TripManager {
         isRecording = false;
         TripRecord finishedTrip = currentTrip;
         currentTrip = null;
+
+        // Save to database
+        if (context != null) {
+            executor.execute(() -> {
+                TripDatabase.getDatabase(context).tripDao().insert(finishedTrip);
+            });
+        }
+
         return finishedTrip;
     }
 

@@ -1,10 +1,17 @@
 package com.diy.obdwizard.trip;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity(tableName = "trips")
 public class TripRecord implements Serializable {
+    @PrimaryKey(autoGenerate = true)
+    public long id;
+
     public long startTimeMs;
     public long endTimeMs;
     public double totalDistanceKm;

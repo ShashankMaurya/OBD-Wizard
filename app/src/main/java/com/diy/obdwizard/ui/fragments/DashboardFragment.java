@@ -83,7 +83,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         btnTripAction.setOnClickListener(v -> {
             TripManager tm = TripManager.getInstance();
             if (tm.isRecording()) {
-                TripRecord record = tm.stopTrip(lastData != null ? lastData : new MotorcycleTelemetry());
+                TripRecord record = tm.stopTrip(lastData != null ? lastData : new MotorcycleTelemetry(), getContext());
                 updateTripButtonState();
                 if (record != null) {
                     Intent intent = new Intent(getContext(), TripSummaryActivity.class);
