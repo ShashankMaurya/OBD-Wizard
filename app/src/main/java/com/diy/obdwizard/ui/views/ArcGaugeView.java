@@ -143,19 +143,19 @@ public class ArcGaugeView extends View {
             canvas.drawArc(arcBounds, START_ANGLE, activeSweep, false, arcPaint);
         }
 
-        // 3. Draw Min Label positioned using polar coordinates at arc start
+        // 3. Draw Min Label positioned outside the arc start to avoid overlapping with fill
         labelPaint.setTextSize(radius * 0.22f);
-        labelPaint.setTextAlign(Paint.Align.LEFT);
-        float minRad = (float) Math.toRadians(START_ANGLE + 10f);
-        float minX = (float) (cx + (radius + strokeWidth) * Math.cos(minRad));
-        float minY = (float) (cy + (radius + strokeWidth) * Math.sin(minRad));
+        labelPaint.setTextAlign(Paint.Align.CENTER);
+        float minRad = (float) Math.toRadians(START_ANGLE - 15f); // Move 15 degrees BEFORE start
+        float textRadius = radius + strokeWidth * 0.4f;
+        float minX = (float) (cx + textRadius * Math.cos(minRad));
+        float minY = (float) (cy + textRadius * Math.sin(minRad));
         canvas.drawText(minLabel, minX, minY, labelPaint);
 
-        // 4. Draw Max Label positioned using polar coordinates at arc end
-        labelPaint.setTextAlign(Paint.Align.RIGHT);
-        float maxRad = (float) Math.toRadians(START_ANGLE + SWEEP_ANGLE - 10f);
-        float maxX = (float) (cx + (radius + strokeWidth) * Math.cos(maxRad));
-        float maxY = (float) (cy + (radius + strokeWidth) * Math.sin(maxRad));
+        // 4. Draw Max Label positioned outside the arc end
+        float maxRad = (float) Math.toRadians(START_ANGLE + SWEEP_ANGLE + 15f); // Move 15 degrees AFTER end
+        float maxX = (float) (cx + textRadius * Math.cos(maxRad));
+        float maxY = (float) (cy + textRadius * Math.sin(maxRad));
         canvas.drawText(maxLabel, maxX, maxY, labelPaint);
 
         // 5. Draw Retro Pointer Shaft with laser core & metallic hub

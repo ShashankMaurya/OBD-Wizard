@@ -307,19 +307,62 @@ public class RpmSpeedGaugeView extends View {
         // 7. Draw bottom status warning icons
         drawStatusIcons(canvas, cx, cy + radius * 0.58f, radius * 0.12f);
 
-        // 8. Draw Digital RPM readout below warning lights
-        float rpmY = cy + radius * 0.80f;
-        rpmTextPaint.setTextSize(radius * 0.18f);
+        // 8. Draw Digital RPM readout in a futuristic "Glass Badge"
+        float rpmTextSize = radius * 0.18f;
+        float rpmY = cy + radius * 0.85f; // Increased padding from status icons
 
-        if (rpm > 6000) {
-            rpmTextPaint.setColor(Color.parseColor("#FF3D00")); // Red at redline
-        } else if (rpm > 3500) {
-            rpmTextPaint.setColor(Color.parseColor("#FF9100")); // Orange at high RPM
-        } else {
-            rpmTextPaint.setColor(Color.parseColor("#00E5FF")); // Cyan at normal RPM
+        // Dynamic color selection based on intensity
+        int color;
+        if (rpm > 6000) color = Color.parseColor("#FF3D00"); // Redline
+        else if (rpm > 3500) color = Color.parseColor("#FF9100"); // High RPM
+        else color = Color.parseColor("#00E5FF"); // Normal
+
+        // 8a. Draw subtle background capsule (Glass look)
+        String rpmVal = String.valueOf(rpm);
+        String rpmUnit = " RPM";
+
+        rpmTextPaint.setTextSize(rpmTextSize);
+        float valWidth = rpmTextPaint.measureText(rpmVal);
+        rpmTextPaint.setTextSize(rpmTextSize * 0.55f);
+        float unitWidth = rpmTextPaint.measureText(rpmUnit);
+        float totalWidth = valWidth + unitWidth;
+
+        float bgPaddingH = radius * 0.12f;
+        float bgPaddingV = radius * 0.06f;
+        RectF rpmBgRect = new RectF(
+                cx - (totalWidth / 2f) - bgPaddingH,
+                rpmY - rpmTextSize,
+                cx + (totalWidth / 2f) + bgPaddingH,
+                rpmY + bgPaddingV * 2
+        );
+
+        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        bgPaint.setStyle(Paint.Style.FILL);
+        bgPaint.setColor(Color.argb(25, 255, 255, 255)); // Semi-transparent glass
+        canvas.drawRoundRect(rpmBgRect, 8, 8, bgPaint);
+
+        bgPaint.setStyle(Paint.Style.STROKE);
+        bgPaint.setStrokeWidth(1.5f);
+        bgPaint.setColor(Color.argb(60, 255, 255, 255)); // Subtle border
+        canvas.drawRoundRect(rpmBgRect, 8, 8, bgPaint);
+
+        // 8b. Draw Text with glow effect at high RPM
+        rpmTextPaint.setColor(color);
+        if (rpm > 3500) {
+            rpmTextPaint.setShadowLayer(15f, 0, 0, color);
         }
 
-        canvas.drawText(rpm + " RPM", cx, rpmY, rpmTextPaint);
+        // Align and draw value
+        rpmTextPaint.setTextAlign(Paint.Align.LEFT);
+        rpmTextPaint.setTextSize(rpmTextSize);
+        float startX = cx - (totalWidth / 2f);
+        canvas.drawText(rpmVal, startX, rpmY, rpmTextPaint);
+
+        // Draw "RPM" unit in smaller, muted text
+        rpmTextPaint.clearShadowLayer();
+        rpmTextPaint.setTextSize(rpmTextSize * 0.55f);
+        rpmTextPaint.setColor(Color.parseColor("#8A99AD"));
+        canvas.drawText(rpmUnit, startX + valWidth, rpmY, rpmTextPaint);
     }
 
     /**
