@@ -44,26 +44,26 @@ public class RetroPointerDrawer {
      * @param canvas       The target Canvas.
      * @param cxHub        Pivot hub center X coordinate.
      * @param cyHub        Pivot hub center Y coordinate.
-     * @param radius       Overall gauge radius for proportional scaling.
+     * @param hubRadiusBase Base radius for calculating hub and needle width.
+     * @param tipRadius    Actual length of the needle from hub center to tip.
      * @param strokeWidth  Stroke width of the arc track.
      * @param angleDeg     Absolute angle in degrees that the pointer is facing.
      * @param pointerColor Main color of the pointer shaft and hub dot (e.g. #FF1744 red or #00E5FF cyan).
      */
-    public void drawPointer(Canvas canvas, float cxHub, float cyHub, float radius, float strokeWidth, float angleDeg, int pointerColor) {
+    public void drawPointer(Canvas canvas, float cxHub, float cyHub, float hubRadiusBase, float tipRadius, float strokeWidth, float angleDeg, int pointerColor) {
         needleShaftPaint.setColor(pointerColor);
         needleGlowPaint.setColor((pointerColor & 0x00FFFFFF) | 0x80000000); // 50% opacity glow
         hubInnerDotPaint.setColor(pointerColor);
-        needleCorePaint.setStrokeWidth(Math.max(1.0f, radius * 0.02f));
+        needleCorePaint.setStrokeWidth(Math.max(1.0f, hubRadiusBase * 0.02f));
 
         double pointerRad = Math.toRadians(angleDeg);
 
         // Tip position extending towards arc scale
-        float tipR = radius - strokeWidth * 0.2f;
-        float tipX = cxHub + (float) (tipR * Math.cos(pointerRad));
-        float tipY = cyHub + (float) (tipR * Math.sin(pointerRad));
+        float tipX = cxHub + (float) (tipRadius * Math.cos(pointerRad));
+        float tipY = cyHub + (float) (tipRadius * Math.sin(pointerRad));
 
         // Base width for tapered needle
-        float baseWidth = radius * 0.045f;
+        float baseWidth = hubRadiusBase * 0.045f;
         double perpRad = pointerRad + (Math.PI / 2.0);
 
         float p1x = cxHub + (float) (baseWidth * Math.cos(perpRad));
@@ -86,7 +86,7 @@ public class RetroPointerDrawer {
         canvas.drawLine(cxHub, cyHub, tipX, tipY, needleCorePaint);
 
         // 3. Draw Center Metallic Hub Cap
-        float hubRadius = radius * 0.12f;
+        float hubRadius = hubRadiusBase * 0.12f;
         canvas.drawCircle(cxHub, cyHub, hubRadius, hubOuterPaint);
         canvas.drawCircle(cxHub, cyHub, hubRadius, hubBorderPaint);
         canvas.drawCircle(cxHub, cyHub, hubRadius * 0.35f, hubInnerDotPaint);
