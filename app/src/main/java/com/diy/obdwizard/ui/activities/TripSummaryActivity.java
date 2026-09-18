@@ -1,13 +1,16 @@
 package com.diy.obdwizard.ui.activities;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.diy.obdwizard.R;
 import com.diy.obdwizard.trip.TripRecord;
+import com.diy.obdwizard.ui.charts.ChartDataHolder;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -15,6 +18,8 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -91,6 +96,13 @@ public class TripSummaryActivity extends AppCompatActivity {
         dataSets.add(rpmSet);
         dataSets.add(tempSet);
 
+        // Prepare data for full-screen view
+        ChartDataHolder.setConfig(new ChartDataHolder.ChartConfig(
+                new ArrayList<>(dataSets), // Shallow copy of the list of sets
+                true,
+                "Trip Telemetry"
+        ));
+
         LineData lineData = new LineData(dataSets);
         chart.setData(lineData);
 
@@ -110,7 +122,48 @@ public class TripSummaryActivity extends AppCompatActivity {
         rightAxis.setTextColor(Color.parseColor("#FF9100")); // RPM color
         rightAxis.setDrawGridLines(false);
 
+        chart.setOnChartGestureListener(new OnChartGestureListener() {
+            @Override
+            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastGesture) {
+            }
+
+            @Override
+            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastGesture) {
+            }
+
+            @Override
+            public void onChartLongPressed(MotionEvent me) {
+                openFullScreen();
+            }
+
+            @Override
+            public void onChartDoubleTapped(MotionEvent me) {
+            }
+
+            @Override
+            public void onChartSingleTapped(MotionEvent me) {
+                openFullScreen();
+            }
+
+            @Override
+            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+            }
+
+            @Override
+            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+            }
+
+            @Override
+            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+            }
+        });
+
         chart.invalidate();
+    }
+
+    private void openFullScreen() {
+        Intent intent = new Intent(this, FullScreenChartActivity.class);
+        startActivity(intent);
     }
 
     private LineDataSet createDataSet(List<Entry> entries, String label, int color, YAxis.AxisDependency dependency) {

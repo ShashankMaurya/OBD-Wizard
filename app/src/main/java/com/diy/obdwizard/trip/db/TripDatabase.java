@@ -9,7 +9,7 @@ import androidx.room.TypeConverters;
 
 import com.diy.obdwizard.trip.TripRecord;
 
-@Database(entities = {TripRecord.class}, version = 2, exportSchema = false)
+@Database(entities = {TripRecord.class}, version = 3, exportSchema = false)
 @TypeConverters({TripConverters.class})
 public abstract class TripDatabase extends RoomDatabase {
     private static volatile TripDatabase INSTANCE;

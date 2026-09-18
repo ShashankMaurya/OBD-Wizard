@@ -42,6 +42,9 @@ public class TripRecord implements Serializable {
         public int engineTemp;
         public double fuelFlow;
 
+        public TelemetrySnapshot() {
+        }
+
         public TelemetrySnapshot(long timestampMs, int speed, int rpm, int engineTemp) {
             this.timestampMs = timestampMs;
             this.speed = speed;

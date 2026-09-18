@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TripConverters {
@@ -15,9 +16,13 @@ public class TripConverters {
     // Deserialize the  JSON string to a list
     @TypeConverter
     public static List<TripRecord.TelemetrySnapshot> fromString(String value) {
+        if (value == null) {
+            return new ArrayList<>();
+        }
         Type listType = new TypeToken<List<TripRecord.TelemetrySnapshot>>() {
         }.getType();
-        return gson.fromJson(value, listType);
+        List<TripRecord.TelemetrySnapshot> list = gson.fromJson(value, listType);
+        return list != null ? list : new ArrayList<>();
     }
 
     // Serialize the list to a JSON string
