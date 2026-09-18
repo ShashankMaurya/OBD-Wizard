@@ -39,7 +39,7 @@ public class TripManager {
 
         currentTrip.endTimeMs = System.currentTimeMillis();
         currentTrip.durationMs = currentTrip.endTimeMs - currentTrip.startTimeMs;
-        currentTrip.fuelConsumedL = finalData.sessionFuelConsumedLiters - startFuel;
+        currentTrip.sessionFuelConsumedLiters = finalData.sessionFuelConsumedLiters - startFuel;
 
         // Finalize stats
         if (!currentTrip.snapshots.isEmpty()) {
@@ -47,12 +47,23 @@ public class TripManager {
             if (durationSec > 0) {
                 double totalSpeed = 0;
                 double totalRpm = 0;
+                double totalThrottle = 0;
+                double totalLoad = 0;
+                double totalEconomy = 0;
+
                 for (TripRecord.TelemetrySnapshot s : currentTrip.snapshots) {
-                    totalSpeed += s.speed;
+                    totalSpeed += s.speedKmh;
                     totalRpm += s.rpm;
+                    totalThrottle += s.throttlePercent;
+                    totalLoad += s.engineLoadPercent;
+                    totalEconomy += s.fuelEconomyKml;
                 }
-                currentTrip.avgSpeedKmh = totalSpeed / currentTrip.snapshots.size();
-                currentTrip.avgRpm = totalRpm / currentTrip.snapshots.size();
+                int count = currentTrip.snapshots.size();
+                currentTrip.avgSpeedKmh = totalSpeed / count;
+                currentTrip.avgRpm = totalRpm / count;
+                currentTrip.avgThrottlePercent = totalThrottle / count;
+                currentTrip.avgLoadPercent = totalLoad / count;
+                currentTrip.avgFuelEconomyKml = totalEconomy / count;
                 currentTrip.totalDistanceKm = (currentTrip.avgSpeedKmh * durationSec) / 3600.0;
             }
         }
@@ -74,10 +85,37 @@ public class TripManager {
     public void recordData(MotorcycleTelemetry data) {
         if (!isRecording || currentTrip == null) return;
 
-        currentTrip.snapshots.add(new TripRecord.TelemetrySnapshot(System.currentTimeMillis(), data.speedKmh, data.rpm, data.engineTempC));
+        TripRecord.TelemetrySnapshot snapshot = new TripRecord.TelemetrySnapshot(
+                System.currentTimeMillis(), data.speedKmh, data.rpm, data.engineTempC);
 
+        snapshot.throttlePercent = data.throttlePercent;
+        snapshot.mapKpa = data.mapKpa;
+        snapshot.iatTempC = data.iatTempC;
+        snapshot.o2Voltage = data.o2Voltage;
+        snapshot.controlModuleVoltage = data.controlModuleVoltage;
+        snapshot.engineLoadPercent = data.engineLoadPercent;
+        snapshot.timingAdvance = data.timingAdvance;
+        snapshot.calculatedGear = data.calculatedGear;
+        snapshot.fuelEconomyKml = data.fuelEconomyKml;
+
+        currentTrip.snapshots.add(snapshot);
+
+        // Update Peak values
         if (data.speedKmh > currentTrip.maxSpeedKmh) currentTrip.maxSpeedKmh = data.speedKmh;
         if (data.rpm > currentTrip.maxRpm) currentTrip.maxRpm = data.rpm;
+        if (data.engineTempC > currentTrip.maxEngineTempC)
+            currentTrip.maxEngineTempC = data.engineTempC;
+        if (data.throttlePercent > currentTrip.maxThrottlePercent)
+            currentTrip.maxThrottlePercent = data.throttlePercent;
+        if (data.engineLoadPercent > currentTrip.maxLoadPercent)
+            currentTrip.maxLoadPercent = data.engineLoadPercent;
+        if (data.controlModuleVoltage > currentTrip.maxVoltage)
+            currentTrip.maxVoltage = data.controlModuleVoltage;
+
+        // Update Minimums
+        if (currentTrip.minVoltage == 0 || data.controlModuleVoltage < currentTrip.minVoltage) {
+            currentTrip.minVoltage = data.controlModuleVoltage;
+        }
 
         // Update best performance timers for this trip
         updateBestTime(data.zeroToFortyTime, 40);

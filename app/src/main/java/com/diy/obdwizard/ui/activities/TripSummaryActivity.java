@@ -59,8 +59,8 @@ public class TripSummaryActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.txtSumAvgSpeed)).setText(String.format(Locale.US, "%.0f km/h", record.avgSpeedKmh));
         ((TextView) findViewById(R.id.txtSumMaxSpeed)).setText(record.maxSpeedKmh + " km/h");
 
-        ((TextView) findViewById(R.id.txtSumFuel)).setText(String.format(Locale.US, "%.2f L", record.fuelConsumedL));
-        double economy = (record.totalDistanceKm > 0) ? (record.fuelConsumedL / record.totalDistanceKm) * 100 : 0;
+        ((TextView) findViewById(R.id.txtSumFuel)).setText(String.format(Locale.US, "%.2f L", record.sessionFuelConsumedLiters));
+        double economy = (record.totalDistanceKm > 0) ? (record.sessionFuelConsumedLiters / record.totalDistanceKm) * 100 : 0;
         ((TextView) findViewById(R.id.txtSumEconomy)).setText(String.format(Locale.US, "%.1f L/100km", economy));
 
         ((TextView) findViewById(R.id.txtSumAvgRpm)).setText(String.format(Locale.US, "%.0f", record.avgRpm));
@@ -82,9 +82,9 @@ public class TripSummaryActivity extends AppCompatActivity {
         long startTime = record.startTimeMs;
         for (TripRecord.TelemetrySnapshot s : record.snapshots) {
             float x = (s.timestampMs - startTime) / 1000f; // Seconds from start
-            speedEntries.add(new Entry(x, s.speed));
+            speedEntries.add(new Entry(x, s.speedKmh));
             rpmEntries.add(new Entry(x, s.rpm));
-            tempEntries.add(new Entry(x, s.engineTemp));
+            tempEntries.add(new Entry(x, s.engineTempC));
         }
 
         LineDataSet speedSet = createDataSet(speedEntries, "Speed (km/h)", Color.parseColor("#00E5FF"), YAxis.AxisDependency.LEFT);
