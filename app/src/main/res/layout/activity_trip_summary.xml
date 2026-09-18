@@ -94,6 +94,67 @@
                     style="@style/DashboardValue"
                     android:text="0 km/h" />
             </LinearLayout>
+
+            <LinearLayout
+                style="@style/DashboardCard"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1">
+
+                <TextView
+                    style="@style/DashboardLabel"
+                    android:text="AVG RPM" />
+
+                <TextView
+                    android:id="@+id/txtSumAvgRpm"
+                    style="@style/DashboardValue"
+                    android:text="0" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/DashboardCard"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1">
+
+                <TextView
+                    style="@style/DashboardLabel"
+                    android:text="MAX RPM" />
+
+                <TextView
+                    android:id="@+id/txtSumMaxRpm"
+                    style="@style/DashboardValue"
+                    android:text="0" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/DashboardCard"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1">
+
+                <TextView
+                    style="@style/DashboardLabel"
+                    android:text="FUEL USED" />
+
+                <TextView
+                    android:id="@+id/txtSumFuel"
+                    style="@style/DashboardValue"
+                    android:text="0.0 L" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/DashboardCard"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1">
+
+                <TextView
+                    style="@style/DashboardLabel"
+                    android:text="AVG ECONOMY" />
+
+                <TextView
+                    android:id="@+id/txtSumEconomy"
+                    style="@style/DashboardValue"
+                    android:text="0.0 L/100km" />
+            </LinearLayout>
+
         </GridLayout>
 
         <!-- Performance Timing Section -->
@@ -189,16 +250,9 @@
             android:textStyle="bold" />
 
         <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/chartSpeed"
+            android:id="@+id/chartCombined"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_dashboard_card" />
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/chartRpm"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="300dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_dashboard_card" />
 

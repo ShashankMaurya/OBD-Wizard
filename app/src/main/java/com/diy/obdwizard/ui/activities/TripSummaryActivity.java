@@ -10,9 +10,11 @@ import com.diy.obdwizard.R;
 import com.diy.obdwizard.trip.TripRecord;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,6 +54,13 @@ public class TripSummaryActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.txtSumAvgSpeed)).setText(String.format(Locale.US, "%.0f km/h", record.avgSpeedKmh));
         ((TextView) findViewById(R.id.txtSumMaxSpeed)).setText(record.maxSpeedKmh + " km/h");
 
+        ((TextView) findViewById(R.id.txtSumFuel)).setText(String.format(Locale.US, "%.2f L", record.fuelConsumedL));
+        double economy = (record.totalDistanceKm > 0) ? (record.fuelConsumedL / record.totalDistanceKm) * 100 : 0;
+        ((TextView) findViewById(R.id.txtSumEconomy)).setText(String.format(Locale.US, "%.1f L/100km", economy));
+
+        ((TextView) findViewById(R.id.txtSumAvgRpm)).setText(String.format(Locale.US, "%.0f", record.avgRpm));
+        ((TextView) findViewById(R.id.txtSumMaxRpm)).setText(String.valueOf(record.maxRpm));
+
         ((TextView) findViewById(R.id.txtSum0to40)).setText(record.best0to40 > 0 ? String.format(Locale.US, "%.1f s", record.best0to40) : "- s");
         ((TextView) findViewById(R.id.txtSum0to60)).setText(record.best0to60 > 0 ? String.format(Locale.US, "%.1f s", record.best0to60) : "- s");
         ((TextView) findViewById(R.id.txtSum0to80)).setText(record.best0to80 > 0 ? String.format(Locale.US, "%.1f s", record.best0to80) : "- s");
@@ -59,40 +68,59 @@ public class TripSummaryActivity extends AppCompatActivity {
     }
 
     private void setupCharts(TripRecord record) {
-        LineChart chartSpeed = findViewById(R.id.chartSpeed);
-        LineChart chartRpm = findViewById(R.id.chartRpm);
+        LineChart chart = findViewById(R.id.chartCombined);
 
         List<Entry> speedEntries = new ArrayList<>();
         List<Entry> rpmEntries = new ArrayList<>();
+        List<Entry> tempEntries = new ArrayList<>();
 
         long startTime = record.startTimeMs;
         for (TripRecord.TelemetrySnapshot s : record.snapshots) {
             float x = (s.timestampMs - startTime) / 1000f; // Seconds from start
             speedEntries.add(new Entry(x, s.speed));
             rpmEntries.add(new Entry(x, s.rpm));
+            tempEntries.add(new Entry(x, s.engineTemp));
         }
 
-        configureChart(chartSpeed, speedEntries, "Speed (km/h)", Color.parseColor("#00E5FF"));
-        configureChart(chartRpm, rpmEntries, "RPM", Color.parseColor("#FF9100"));
-    }
+        LineDataSet speedSet = createDataSet(speedEntries, "Speed (km/h)", Color.parseColor("#00E5FF"), YAxis.AxisDependency.LEFT);
+        LineDataSet rpmSet = createDataSet(rpmEntries, "RPM", Color.parseColor("#FF9100"), YAxis.AxisDependency.RIGHT);
+        LineDataSet tempSet = createDataSet(tempEntries, "Temp (°C)", Color.parseColor("#FF5252"), YAxis.AxisDependency.LEFT);
 
-    private void configureChart(LineChart chart, List<Entry> entries, String label, int color) {
-        LineDataSet dataSet = new LineDataSet(entries, label);
-        dataSet.setColor(color);
-        dataSet.setDrawCircles(false);
-        dataSet.setDrawValues(false);
-        dataSet.setLineWidth(2f);
-        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        List<ILineDataSet> dataSets = new ArrayList<>();
+        dataSets.add(speedSet);
+        dataSets.add(rpmSet);
+        dataSets.add(tempSet);
 
-        LineData lineData = new LineData(dataSet);
+        LineData lineData = new LineData(dataSets);
         chart.setData(lineData);
 
+        // Customize Chart
         chart.getDescription().setEnabled(false);
         chart.getLegend().setTextColor(Color.WHITE);
         chart.getXAxis().setTextColor(Color.WHITE);
         chart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-        chart.getAxisLeft().setTextColor(Color.WHITE);
-        chart.getAxisRight().setEnabled(false);
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setTextColor(Color.WHITE);
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setGridColor(Color.parseColor("#33FFFFFF"));
+
+        YAxis rightAxis = chart.getAxisRight();
+        rightAxis.setEnabled(true);
+        rightAxis.setTextColor(Color.parseColor("#FF9100")); // RPM color
+        rightAxis.setDrawGridLines(false);
+
         chart.invalidate();
+    }
+
+    private LineDataSet createDataSet(List<Entry> entries, String label, int color, YAxis.AxisDependency dependency) {
+        LineDataSet dataSet = new LineDataSet(entries, label);
+        dataSet.setColor(color);
+        dataSet.setAxisDependency(dependency);
+        dataSet.setDrawCircles(false);
+        dataSet.setDrawValues(false);
+        dataSet.setLineWidth(2f);
+        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        return dataSet;
     }
 }

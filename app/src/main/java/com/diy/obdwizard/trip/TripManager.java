@@ -46,10 +46,13 @@ public class TripManager {
             long durationSec = (currentTrip.endTimeMs - currentTrip.startTimeMs) / 1000;
             if (durationSec > 0) {
                 double totalSpeed = 0;
+                double totalRpm = 0;
                 for (TripRecord.TelemetrySnapshot s : currentTrip.snapshots) {
                     totalSpeed += s.speed;
+                    totalRpm += s.rpm;
                 }
                 currentTrip.avgSpeedKmh = totalSpeed / currentTrip.snapshots.size();
+                currentTrip.avgRpm = totalRpm / currentTrip.snapshots.size();
                 currentTrip.totalDistanceKm = (currentTrip.avgSpeedKmh * durationSec) / 3600.0;
             }
         }
@@ -71,7 +74,7 @@ public class TripManager {
     public void recordData(MotorcycleTelemetry data) {
         if (!isRecording || currentTrip == null) return;
 
-        currentTrip.snapshots.add(new TripRecord.TelemetrySnapshot(System.currentTimeMillis(), data.speedKmh, data.rpm));
+        currentTrip.snapshots.add(new TripRecord.TelemetrySnapshot(System.currentTimeMillis(), data.speedKmh, data.rpm, data.engineTempC));
 
         if (data.speedKmh > currentTrip.maxSpeedKmh) currentTrip.maxSpeedKmh = data.speedKmh;
         if (data.rpm > currentTrip.maxRpm) currentTrip.maxRpm = data.rpm;

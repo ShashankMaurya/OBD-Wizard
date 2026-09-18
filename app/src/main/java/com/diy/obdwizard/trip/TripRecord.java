@@ -19,6 +19,7 @@ public class TripRecord implements Serializable {
     public double fuelConsumedL;
     public int maxSpeedKmh;
     public int maxRpm;
+    public double avgRpm;
     public double avgSpeedKmh;
 
     // Performance timers (best for this trip)
@@ -38,12 +39,14 @@ public class TripRecord implements Serializable {
         public long timestampMs;
         public int speed;
         public int rpm;
+        public int engineTemp;
         public double fuelFlow;
 
-        public TelemetrySnapshot(long timestampMs, int speed, int rpm) {
+        public TelemetrySnapshot(long timestampMs, int speed, int rpm, int engineTemp) {
             this.timestampMs = timestampMs;
             this.speed = speed;
             this.rpm = rpm;
+            this.engineTemp = engineTemp;
         }
     }
 }
