@@ -1,16 +1,25 @@
 package com.diy.obdwizard.trip;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity(tableName = "trips")
 public class TripRecord implements Serializable {
+    @PrimaryKey(autoGenerate = true)
+    public long id;
+
     public long startTimeMs;
     public long endTimeMs;
+    public long durationMs;
     public double totalDistanceKm;
-    public double fuelConsumedL;
+    public double sessionFuelConsumedLiters;
     public int maxSpeedKmh;
     public int maxRpm;
+    public double avgRpm;
     public double avgSpeedKmh;
 
     // Performance timers (best for this trip)
@@ -18,6 +27,16 @@ public class TripRecord implements Serializable {
     public double best0to60 = -1;
     public double best0to80 = -1;
     public double best0to100 = -1;
+
+    // Additional Summary/Aggregate Fields aligned with MotorcycleTelemetry
+    public int maxEngineTempC;
+    public double maxThrottlePercent;
+    public double avgThrottlePercent;
+    public double maxLoadPercent;
+    public double avgLoadPercent;
+    public double minVoltage = 0;
+    public double maxVoltage;
+    public double avgFuelEconomyKml;
 
     // Time-series data for visualization
     public List<TelemetrySnapshot> snapshots = new ArrayList<>();
@@ -28,14 +47,28 @@ public class TripRecord implements Serializable {
 
     public static class TelemetrySnapshot implements Serializable {
         public long timestampMs;
-        public int speed;
+        public int speedKmh;
         public int rpm;
-        public double fuelFlow;
+        public int engineTempC;
+        public double throttlePercent;
+        public int mapKpa;
+        public int iatTempC;
+        public double o2Voltage;
+        public double controlModuleVoltage;
+        public double engineLoadPercent;
+        public double timingAdvance;
+        public String calculatedGear;
+        public double fuelEconomyKml;
+        public double fuelFlow; // Keep if still useful, though sessionFuelConsumedLiters is primary
 
-        public TelemetrySnapshot(long timestampMs, int speed, int rpm) {
+        public TelemetrySnapshot() {
+        }
+
+        public TelemetrySnapshot(long timestampMs, int speedKmh, int rpm, int engineTempC) {
             this.timestampMs = timestampMs;
-            this.speed = speed;
+            this.speedKmh = speedKmh;
             this.rpm = rpm;
+            this.engineTempC = engineTempC;
         }
     }
 }

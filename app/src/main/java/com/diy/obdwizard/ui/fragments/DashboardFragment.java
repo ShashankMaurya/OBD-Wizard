@@ -83,7 +83,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         btnTripAction.setOnClickListener(v -> {
             TripManager tm = TripManager.getInstance();
             if (tm.isRecording()) {
-                TripRecord record = tm.stopTrip(lastData != null ? lastData : new MotorcycleTelemetry());
+                TripRecord record = tm.stopTrip(lastData != null ? lastData : new MotorcycleTelemetry(), getContext());
                 updateTripButtonState();
                 if (record != null) {
                     Intent intent = new Intent(getContext(), TripSummaryActivity.class);
@@ -105,8 +105,18 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
     }
 
     private void updateTripButtonState() {
-        if (TripManager.getInstance().isRecording()) {
-            btnTripAction.setText("STOP TRIP");
+        TripManager tm = TripManager.getInstance();
+        if (tm.isRecording()) {
+            long elapsedMs = System.currentTimeMillis() - tm.getStartTimeMs();
+            long sec = (elapsedMs / 1000) % 60;
+            long min = (elapsedMs / 60000) % 60;
+            long hr = (elapsedMs / 3600000);
+
+            String timeStr = (hr > 0)
+                    ? String.format(Locale.US, "%02d:%02d:%02d", hr, min, sec)
+                    : String.format(Locale.US, "%02d:%02d", min, sec);
+
+            btnTripAction.setText("STOP TRIP (" + timeStr + ")");
             btnTripAction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF3D00")));
             btnTripAction.setTextColor(Color.WHITE);
         } else {
@@ -129,6 +139,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         
         if (getActivity() == null) return;
         getActivity().runOnUiThread(() -> {
+            updateTripButtonState();
             if (rpmSpeedGauge == null) return;
 
             // 1. Update Central Gauge (RPM, Speed, High Temp Alert, Battery Alert)

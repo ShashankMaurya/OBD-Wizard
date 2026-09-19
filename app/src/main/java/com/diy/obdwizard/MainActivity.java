@@ -30,6 +30,7 @@ import com.diy.obdwizard.ui.fragments.AdvancedDashFragment;
 import com.diy.obdwizard.ui.fragments.DashboardFragment;
 import com.diy.obdwizard.ui.fragments.DtcFragment;
 import com.diy.obdwizard.ui.fragments.HomeFragment;
+import com.diy.obdwizard.ui.fragments.TripHistoryFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
@@ -78,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
             } else if (itemId == R.id.nav_advanced_dashboard) {
                 // Secondary Advanced Dashboard for secondary ECU telemetry & timers
                 selectedFragment = new AdvancedDashFragment();
+            } else if (itemId == R.id.nav_trip_history) {
+                selectedFragment = new TripHistoryFragment();
             } else if (itemId == R.id.nav_dtc) {
                 selectedFragment = new DtcFragment();
             } else if (itemId == R.id.nav_about) {
