@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +24,7 @@ import com.diy.obdwizard.ui.activities.TripSummaryActivity;
 import com.diy.obdwizard.ui.views.ArcGaugeView;
 import com.diy.obdwizard.ui.views.BikeGearView;
 import com.diy.obdwizard.ui.views.RpmSpeedGaugeView;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.Locale;
 
@@ -57,12 +57,12 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
     private TextView txtFuelConsumedValue;
     private TextView txtEconInstValue;
     private TextView txtEconAvgValue;
-    private Button btnTripAction;
+    private MaterialButton btnTripAction;
 
     // OBD Connection Views
     private TextView txtHeaderStatus;
     private TextView txtConnectBanner;
-    private Button btnConnectObd;
+    private MaterialButton btnConnectObd;
 
     private MotorcycleTelemetry lastData;
 
@@ -142,10 +142,14 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
             btnTripAction.setText("STOP TRIP (" + timeStr + ")");
             btnTripAction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF3D00")));
             btnTripAction.setTextColor(Color.WHITE);
+            btnTripAction.setIconResource(R.drawable.ic_stop);
+            btnTripAction.setIconTint(ColorStateList.valueOf(Color.WHITE));
         } else {
             btnTripAction.setText("START TRIP");
             btnTripAction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00E676")));
             btnTripAction.setTextColor(Color.BLACK);
+            btnTripAction.setIconResource(R.drawable.ic_play);
+            btnTripAction.setIconTint(ColorStateList.valueOf(Color.BLACK));
         }
     }
 
@@ -310,6 +314,8 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
                 btnConnectObd.setText("DISCONNECT");
                 btnConnectObd.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF3D00")));
                 btnConnectObd.setTextColor(Color.WHITE);
+                btnConnectObd.setIconResource(R.drawable.ic_bluetooth);
+                btnConnectObd.setIconTint(ColorStateList.valueOf(Color.WHITE));
             } else {
                 txtHeaderStatus.setText("● DISCONNECTED");
                 txtHeaderStatus.setTextColor(Color.parseColor("#FF3D00"));
@@ -319,6 +325,8 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
                 btnConnectObd.setText("CONNECT OBD");
                 btnConnectObd.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00E676")));
                 btnConnectObd.setTextColor(Color.BLACK);
+                btnConnectObd.setIconResource(R.drawable.ic_bluetooth);
+                btnConnectObd.setIconTint(ColorStateList.valueOf(Color.BLACK));
             }
         });
     }

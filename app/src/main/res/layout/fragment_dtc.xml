@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black_bg"
@@ -11,11 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="56dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDtcScan"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:backgroundTint="@color/btn_danger"
+            app:icon="@drawable/ic_check_engine"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconTint="@color/text_white"
             android:text="Scan &amp; Clear DTCs"
             android:textColor="@color/text_white"
             android:textStyle="bold" />
@@ -49,12 +54,16 @@
         </LinearLayout>
     </FrameLayout>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDtcDictionary"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="24dp"
         android:backgroundTint="@color/card_bg"
+        app:icon="@drawable/ic_book_dictionary"
+        app:iconGravity="textStart"
+        app:iconPadding="12dp"
+        app:iconTint="@color/text_white"
         android:text="Show All DTC Descriptions"
         android:textColor="@color/text_white"
         android:textStyle="bold" />
