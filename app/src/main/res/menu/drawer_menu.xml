@@ -2,28 +2,24 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_home"
-            android:icon="@android:drawable/ic_menu_compass"
-            android:title="Home" />
-        <item
             android:id="@+id/nav_dashboard"
-            android:icon="@android:drawable/ic_menu_sort_by_size"
-            android:title="Dashboard" />
+            android:icon="@drawable/ic_nav_dashboard"
+            android:title="@string/nav_dashboard" />
         <item
             android:id="@+id/nav_advanced_dashboard"
-            android:icon="@android:drawable/ic_menu_view"
-            android:title="Advanced Dashboard" />
+            android:icon="@drawable/ic_nav_advanced"
+            android:title="@string/nav_advanced_dashboard" />
         <item
             android:id="@+id/nav_trip_history"
-            android:icon="@android:drawable/ic_menu_recent_history"
-            android:title="Trip History" />
+            android:icon="@drawable/ic_nav_history"
+            android:title="@string/nav_trip_history" />
         <item
             android:id="@+id/nav_dtc"
-            android:icon="@android:drawable/ic_menu_manage"
-            android:title="DTC Codes" />
+            android:icon="@drawable/ic_nav_dtc"
+            android:title="@string/nav_dtc_codes" />
         <item
             android:id="@+id/nav_about"
-            android:icon="@android:drawable/ic_menu_info_details"
-            android:title="About" />
+            android:icon="@drawable/ic_nav_about"
+            android:title="@string/nav_about" />
     </group>
 </menu>

@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Simple semi-circle dial arc -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M3,15 A9,9 0 1,1 21,15"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+    <!-- Center Pivot Dot -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M12,15m-1.5,0a1.5,1.5 0 1,0 3,0a1.5,1.5 0 1,0 -3,0" />
+    <!-- Pointer Needle -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M12,15 L16.5,9.5"
+        android:strokeWidth="2"
+        android:strokeColor="#00E5FF"
+        android:strokeLineCap="round" />
+</vector>

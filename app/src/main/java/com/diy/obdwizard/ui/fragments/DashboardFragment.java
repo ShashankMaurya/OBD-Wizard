@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.diy.obdwizard.MainActivity;
 import com.diy.obdwizard.R;
 import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
@@ -24,6 +24,7 @@ import com.diy.obdwizard.ui.activities.TripSummaryActivity;
 import com.diy.obdwizard.ui.views.ArcGaugeView;
 import com.diy.obdwizard.ui.views.BikeGearView;
 import com.diy.obdwizard.ui.views.RpmSpeedGaugeView;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.Locale;
 
@@ -56,7 +57,12 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
     private TextView txtFuelConsumedValue;
     private TextView txtEconInstValue;
     private TextView txtEconAvgValue;
-    private Button btnTripAction;
+    private MaterialButton btnTripAction;
+
+    // OBD Connection Views
+    private TextView txtHeaderStatus;
+    private TextView txtConnectBanner;
+    private MaterialButton btnConnectObd;
 
     private MotorcycleTelemetry lastData;
 
@@ -78,7 +84,24 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         txtEconAvgValue = view.findViewById(R.id.txtEconAvgValue);
         btnTripAction = view.findViewById(R.id.btnTripAction);
 
+        // Bind OBD connection views
+        txtHeaderStatus = view.findViewById(R.id.txtHeaderStatus);
+        txtConnectBanner = view.findViewById(R.id.txtConnectBanner);
+        btnConnectObd = view.findViewById(R.id.btnConnectObd);
+
+        btnConnectObd.setOnClickListener(v -> {
+            MainActivity activity = (MainActivity) getActivity();
+            if (activity != null) {
+                if (activity.getObdManager().isConnected()) {
+                    activity.disconnect();
+                } else {
+                    activity.startConnection();
+                }
+            }
+        });
+
         updateTripButtonState();
+        updateConnectionStatus();
 
         btnTripAction.setOnClickListener(v -> {
             TripManager tm = TripManager.getInstance();
@@ -119,10 +142,14 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
             btnTripAction.setText("STOP TRIP (" + timeStr + ")");
             btnTripAction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF3D00")));
             btnTripAction.setTextColor(Color.WHITE);
+            btnTripAction.setIconResource(R.drawable.ic_stop);
+            btnTripAction.setIconTint(ColorStateList.valueOf(Color.WHITE));
         } else {
             btnTripAction.setText("START TRIP");
             btnTripAction.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00E676")));
             btnTripAction.setTextColor(Color.BLACK);
+            btnTripAction.setIconResource(R.drawable.ic_play);
+            btnTripAction.setIconTint(ColorStateList.valueOf(Color.BLACK));
         }
     }
 
@@ -243,5 +270,70 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
                 txtEconAvgValue.setText(String.format(Locale.US, "%.1f km/L", data.averageFuelEconomyKml));
             }
         });
+    }
+
+    public void showConnecting() {
+        if (getActivity() == null) return;
+        getActivity().runOnUiThread(() -> {
+            if (txtHeaderStatus != null) {
+                txtHeaderStatus.setText("● CONNECTING...");
+                txtHeaderStatus.setTextColor(Color.parseColor("#8A99AD"));
+            }
+            if (txtConnectBanner != null) {
+                txtConnectBanner.setText("Searching for OBD device...");
+            }
+            if (btnConnectObd != null) {
+                btnConnectObd.setEnabled(false);
+                btnConnectObd.setText("CONNECTING");
+                btnConnectObd.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#333333")));
+                btnConnectObd.setTextColor(Color.parseColor("#8A99AD"));
+            }
+        });
+    }
+
+    public void updateConnectionStatus() {
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity == null) return;
+
+        activity.runOnUiThread(() -> {
+            if (txtHeaderStatus == null || btnConnectObd == null) return;
+
+            if (activity.getObdManager().isConnecting()) {
+                showConnecting();
+                return;
+            }
+
+            btnConnectObd.setEnabled(true);
+            boolean isConnected = activity.getObdManager().isConnected();
+            if (isConnected) {
+                txtHeaderStatus.setText("● CONNECTED");
+                txtHeaderStatus.setTextColor(Color.parseColor("#00E676"));
+                if (txtConnectBanner != null) {
+                    txtConnectBanner.setText("ECU Telemetry Active");
+                }
+                btnConnectObd.setText("DISCONNECT");
+                btnConnectObd.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF3D00")));
+                btnConnectObd.setTextColor(Color.WHITE);
+                btnConnectObd.setIconResource(R.drawable.ic_bluetooth);
+                btnConnectObd.setIconTint(ColorStateList.valueOf(Color.WHITE));
+            } else {
+                txtHeaderStatus.setText("● DISCONNECTED");
+                txtHeaderStatus.setTextColor(Color.parseColor("#FF3D00"));
+                if (txtConnectBanner != null) {
+                    txtConnectBanner.setText("Link OBD scanner for live ECU telemetry");
+                }
+                btnConnectObd.setText("CONNECT OBD");
+                btnConnectObd.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00E676")));
+                btnConnectObd.setTextColor(Color.BLACK);
+                btnConnectObd.setIconResource(R.drawable.ic_bluetooth);
+                btnConnectObd.setIconTint(ColorStateList.valueOf(Color.BLACK));
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateConnectionStatus();
     }
 }
