@@ -29,7 +29,6 @@ import com.diy.obdwizard.ui.fragments.AboutFragment;
 import com.diy.obdwizard.ui.fragments.AdvancedDashFragment;
 import com.diy.obdwizard.ui.fragments.DashboardFragment;
 import com.diy.obdwizard.ui.fragments.DtcFragment;
-import com.diy.obdwizard.ui.fragments.HomeFragment;
 import com.diy.obdwizard.ui.fragments.TripHistoryFragment;
 import com.google.android.material.navigation.NavigationView;
 
@@ -70,10 +69,8 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
 
-            // Handle navigation item switching between Home, Default Dashboard, Advanced Dashboard, DTCs, and About
-            if (itemId == R.id.nav_home) {
-                selectedFragment = new HomeFragment();
-            } else if (itemId == R.id.nav_dashboard) {
+            // Handle navigation item switching between Dashboard, Advanced Dashboard, DTCs, and About
+            if (itemId == R.id.nav_dashboard) {
                 // Primary Default Dashboard with central RPM arc gauge & futuristic card layout
                 selectedFragment = new DashboardFragment();
             } else if (itemId == R.id.nav_advanced_dashboard) {
@@ -105,9 +102,9 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new HomeFragment())
+                    .replace(R.id.fragment_container, new DashboardFragment())
                     .commit();
-            navView.setCheckedItem(R.id.nav_home);
+            navView.setCheckedItem(R.id.nav_dashboard);
         }
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -187,8 +184,8 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         runOnUiThread(() -> {
             updateGlobalStatus(R.string.status_connecting, getColor(R.color.text_gray));
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-            if (currentFragment instanceof HomeFragment) {
-                ((HomeFragment) currentFragment).showConnecting();
+            if (currentFragment instanceof DashboardFragment) {
+                ((DashboardFragment) currentFragment).showConnecting();
             }
         });
     }
@@ -202,8 +199,8 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
                 updateGlobalStatus(R.string.status_disconnected, getColor(R.color.accent_red));
             }
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-            if (currentFragment instanceof HomeFragment) {
-                ((HomeFragment) currentFragment).updateStatus();
+            if (currentFragment instanceof DashboardFragment) {
+                ((DashboardFragment) currentFragment).updateConnectionStatus();
             }
         });
     }
