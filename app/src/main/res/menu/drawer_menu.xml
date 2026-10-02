@@ -4,22 +4,22 @@
         <item
             android:id="@+id/nav_dashboard"
             android:icon="@drawable/ic_nav_dashboard"
-            android:title="Dashboard" />
+            android:title="@string/nav_dashboard" />
         <item
             android:id="@+id/nav_advanced_dashboard"
             android:icon="@drawable/ic_nav_advanced"
-            android:title="Advanced Dashboard" />
+            android:title="@string/nav_advanced_dashboard" />
         <item
             android:id="@+id/nav_trip_history"
             android:icon="@drawable/ic_nav_history"
-            android:title="Trip History" />
+            android:title="@string/nav_trip_history" />
         <item
             android:id="@+id/nav_dtc"
             android:icon="@drawable/ic_nav_dtc"
-            android:title="DTC Codes" />
+            android:title="@string/nav_dtc_codes" />
         <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_nav_about"
-            android:title="@string/action_settings" />
+            android:title="@string/nav_about" />
     </group>
 </menu>

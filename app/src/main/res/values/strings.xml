@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">OBD Wizard</string>
-    <string name="action_settings">About</string>
 
     <!--  Tool Specific  -->
     <string name="status_disconnected">DISCONNECTED</string>
@@ -11,6 +10,14 @@
     <string name="btn_disconnect">Disconnect</string>
     <string name="btn_dtc">SCAN / CLEAR DTC CODES</string>
 
+    <!--  nav tool-tips  -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!--  nav drawer names  -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_about">About</string>
+    <string name="nav_advanced_dashboard">Advanced Dashboard</string>
+    <string name="nav_trip_history">Trip History</string>
+    <string name="nav_dtc_codes">DTC Codes</string>
 </resources>
