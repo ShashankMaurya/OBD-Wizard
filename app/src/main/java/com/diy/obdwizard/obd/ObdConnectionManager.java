@@ -19,6 +19,7 @@ public class ObdConnectionManager {
     private IObdDataSource obdSource;
     private volatile boolean isPolling = false;
     private volatile boolean isConnecting = false;
+    private volatile boolean isPaused = false;
 
     public ObdConnectionManager(ObdManagerCallbacks.ConnectionListener listener) {
         this.listener = listener;
@@ -53,6 +54,15 @@ public class ObdConnectionManager {
 
     private void runTelemetryLoop() {
         while (isPolling && obdSource != null && obdSource.isConnected()) {
+            if (isPaused) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                continue;
+            }
+
             try {
                 MotorcycleTelemetry data = obdSource.pollTelemetry();
                 if (listener != null) listener.onTelemetryDataReceived(data);
@@ -75,6 +85,7 @@ public class ObdConnectionManager {
     private void handleUnexpectedDisconnect(String errorMsg) {
         if (!isPolling) return;
         isPolling = false;
+        isPaused = false;
         if (obdSource != null) {
             obdSource.disconnect();
         }
@@ -86,6 +97,7 @@ public class ObdConnectionManager {
 
     public void disconnect() {
         isPolling = false;
+        isPaused = false;
         workerThread.execute(() -> {
             if (obdSource != null) obdSource.disconnect();
             if (listener != null) listener.onConnectionStateChanged(false);
@@ -98,26 +110,43 @@ public class ObdConnectionManager {
             return;
         }
 
+        isPaused = true;
         workerThread.execute(() -> {
             try {
+                Thread.sleep(80);
                 List<String> codes = obdSource.readDtcCodes();
                 if (callback != null) callback.onDtcRead(codes);
             } catch (IOException e) {
                 handleUnexpectedDisconnect("Device disconnected during DTC read");
                 if (callback != null)
                     callback.onError("Failed to read DTC codes: Device disconnected");
+            } catch (InterruptedException e) {
+                if (callback != null) callback.onError("DTC read interrupted");
+            } finally {
+                isPaused = false;
             }
         });
     }
 
     public void clearDtc(ObdManagerCallbacks.DtcClearListener callback) {
+        if (!isConnected()) {
+            if (callback != null) callback.onDtcCleared(false);
+            return;
+        }
+
+        isPaused = true;
         workerThread.execute(() -> {
             try {
+                Thread.sleep(80);
                 boolean cleared = obdSource.clearDtcCodes();
                 if (callback != null) callback.onDtcCleared(cleared);
             } catch (IOException e) {
                 handleUnexpectedDisconnect("Device disconnected during DTC clear");
                 if (callback != null) callback.onDtcCleared(false);
+            } catch (InterruptedException e) {
+                if (callback != null) callback.onDtcCleared(false);
+            } finally {
+                isPaused = false;
             }
         });
     }
