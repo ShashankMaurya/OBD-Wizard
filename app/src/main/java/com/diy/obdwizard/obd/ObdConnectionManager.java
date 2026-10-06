@@ -11,10 +11,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ObdConnectionManager {
 
-    private final ExecutorService workerThread = Executors.newSingleThreadExecutor();
+    private final ExecutorService commandExecutor = Executors.newSingleThreadExecutor();
+    private final ScheduledExecutorService pollingExecutor = Executors.newSingleThreadScheduledExecutor();
     private final ObdManagerCallbacks.ConnectionListener listener;
     private IObdDataSource obdSource;
     private volatile boolean isPolling = false;
@@ -34,7 +37,7 @@ public class ObdConnectionManager {
         isConnecting = true;
         if (listener != null) listener.onConnecting();
 
-        workerThread.execute(() -> {
+        commandExecutor.execute(() -> {
             BluetoothConnection bt = new BluetoothConnection(targetDevice);
             obdSource = new RePidEngine(bt);
             boolean connected = obdSource.connect();
@@ -42,7 +45,7 @@ public class ObdConnectionManager {
             if (connected) {
                 isPolling = true;
                 if (listener != null) listener.onConnectionStateChanged(true);
-                runTelemetryLoop();
+                scheduleNextPoll();
             } else {
                 if (listener != null) {
                     listener.onError("Connection Failed");
@@ -52,34 +55,21 @@ public class ObdConnectionManager {
         });
     }
 
-    private void runTelemetryLoop() {
-        while (isPolling && obdSource != null && obdSource.isConnected()) {
-            if (isPaused) {
+    private void scheduleNextPoll() {
+        if (!isPolling) return;
+        pollingExecutor.schedule(() -> {
+            if (!isPolling) return;
+            if (!isPaused && obdSource != null && obdSource.isConnected()) {
                 try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    break;
+                    MotorcycleTelemetry data = obdSource.pollTelemetry();
+                    if (listener != null) listener.onTelemetryDataReceived(data);
+                } catch (IOException e) {
+                    handleUnexpectedDisconnect("OBD device disconnected");
+                    return;
                 }
-                continue;
             }
-
-            try {
-                MotorcycleTelemetry data = obdSource.pollTelemetry();
-                if (listener != null) listener.onTelemetryDataReceived(data);
-            } catch (IOException e) {
-                handleUnexpectedDisconnect("OBD device disconnected");
-                break;
-            }
-
-            try {
-                Thread.sleep(60);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
-        if (isPolling && (obdSource == null || !obdSource.isConnected())) {
-            handleUnexpectedDisconnect("OBD device disconnected");
-        }
+            scheduleNextPoll();
+        }, 60, TimeUnit.MILLISECONDS);
     }
 
     private void handleUnexpectedDisconnect(String errorMsg) {
@@ -98,7 +88,7 @@ public class ObdConnectionManager {
     public void disconnect() {
         isPolling = false;
         isPaused = false;
-        workerThread.execute(() -> {
+        commandExecutor.execute(() -> {
             if (obdSource != null) obdSource.disconnect();
             if (listener != null) listener.onConnectionStateChanged(false);
         });
@@ -111,9 +101,10 @@ public class ObdConnectionManager {
         }
 
         isPaused = true;
-        workerThread.execute(() -> {
+        commandExecutor.execute(() -> {
             try {
-                Thread.sleep(80);
+                // Wait briefly for any active poll to finish
+                Thread.sleep(50);
                 List<String> codes = obdSource.readDtcCodes();
                 if (callback != null) callback.onDtcRead(codes);
             } catch (IOException e) {
@@ -135,9 +126,9 @@ public class ObdConnectionManager {
         }
 
         isPaused = true;
-        workerThread.execute(() -> {
+        commandExecutor.execute(() -> {
             try {
-                Thread.sleep(80);
+                Thread.sleep(50);
                 boolean cleared = obdSource.clearDtcCodes();
                 if (callback != null) callback.onDtcCleared(cleared);
             } catch (IOException e) {
@@ -152,12 +143,13 @@ public class ObdConnectionManager {
     }
 
     public void executeInBackground(Runnable runnable) {
-        workerThread.execute(runnable);
+        commandExecutor.execute(runnable);
     }
 
     public void destroy() {
         disconnect();
-        workerThread.shutdown();
+        pollingExecutor.shutdown();
+        commandExecutor.shutdown();
     }
 
     public boolean isConnected() {
