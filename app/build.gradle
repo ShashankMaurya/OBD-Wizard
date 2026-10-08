@@ -38,10 +38,12 @@ dependencies {
     implementation libs.activity.ktx
     implementation libs.appcompat
     implementation libs.constraintlayout
+    implementation libs.fragment
     implementation libs.material
     implementation libs.navigation.fragment
     implementation libs.navigation.ui
     implementation libs.mp.android.chart
+    implementation libs.recyclerview
     implementation libs.room.runtime
     annotationProcessor libs.room.compiler
     implementation libs.gson
