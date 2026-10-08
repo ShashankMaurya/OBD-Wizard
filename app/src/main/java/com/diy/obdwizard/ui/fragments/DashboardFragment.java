@@ -288,6 +288,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
 
         activity.runOnUiThread(() -> {
             if (txtHeaderStatus == null || btnConnectObd == null) return;
+            updateTripButtonState();
 
             if (activity.getObdManager().isConnecting()) {
                 showConnecting();

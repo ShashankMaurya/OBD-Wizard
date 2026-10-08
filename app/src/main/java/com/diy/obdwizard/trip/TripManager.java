@@ -17,6 +17,11 @@ public class TripManager {
     // Integration helpers
     private double startFuel = 0;
     private final double startDistance = 0;
+    private MotorcycleTelemetry lastTelemetry = null;
+
+    public MotorcycleTelemetry getLastTelemetry() {
+        return lastTelemetry;
+    }
 
     public static synchronized TripManager getInstance() {
         if (instance == null) {
@@ -29,6 +34,7 @@ public class TripManager {
         currentTrip = new TripRecord(System.currentTimeMillis());
         isRecording = true;
         startFuel = initialData.sessionFuelConsumedLiters;
+        lastTelemetry = initialData;
         // We don't have a direct 'totalDistance' field in telemetry that is global, 
         // but sessionDistanceKm in RePidEngine is integrated. 
         // For simplicity, we'll track the delta of sessionFuelConsumedLiters.
@@ -84,6 +90,7 @@ public class TripManager {
 
     public void recordData(MotorcycleTelemetry data) {
         if (!isRecording || currentTrip == null) return;
+        this.lastTelemetry = data;
 
         TripRecord.TelemetrySnapshot snapshot = new TripRecord.TelemetrySnapshot(
                 System.currentTimeMillis(), data.speedKmh, data.rpm, data.engineTempC);

@@ -25,6 +25,8 @@ import com.diy.obdwizard.obd.ObdConnectionManager;
 import com.diy.obdwizard.obd.interfaces.ObdManagerCallbacks;
 import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
+import com.diy.obdwizard.trip.TripManager;
+import com.diy.obdwizard.trip.TripRecord;
 import com.diy.obdwizard.ui.fragments.AboutFragment;
 import com.diy.obdwizard.ui.fragments.AdvancedDashFragment;
 import com.diy.obdwizard.ui.fragments.DashboardFragment;
@@ -197,6 +199,16 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
                 updateGlobalStatus(R.string.status_connected, getColor(R.color.accent_green));
             } else {
                 updateGlobalStatus(R.string.status_disconnected, getColor(R.color.accent_red));
+
+                // If a trip is currently recording when connection is lost / disconnected, save it automatically
+                TripManager tm = TripManager.getInstance();
+                if (tm.isRecording()) {
+                    MotorcycleTelemetry finalData = tm.getLastTelemetry() != null ? tm.getLastTelemetry() : new MotorcycleTelemetry();
+                    TripRecord record = tm.stopTrip(finalData, getApplicationContext());
+                    if (record != null) {
+                        Toast.makeText(MainActivity.this, "ECU Disconnected: Trip Saved Successfully", Toast.LENGTH_LONG).show();
+                    }
+                }
             }
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof DashboardFragment) {
