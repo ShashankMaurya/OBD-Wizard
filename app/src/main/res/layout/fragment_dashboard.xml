@@ -260,7 +260,7 @@
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
 
-                <!-- Card 4: Fuel Left -->
+                <!-- Card 4: Engine Load -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -279,21 +279,21 @@
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:contentDescription="Fuel Icon"
-                            android:src="@drawable/ic_fuel" />
+                            android:contentDescription="Engine Load Icon"
+                            android:src="@drawable/ic_engine_load" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="FUEL LEFT (13L)"
+                            android:text="ENGINE LOAD"
                             android:textColor="#8A99AD"
                             android:textSize="11sp"
                             android:textStyle="bold" />
                     </LinearLayout>
 
                     <com.diy.obdwizard.ui.views.ArcGaugeView
-                        android:id="@+id/gaugeFuel"
+                        android:id="@+id/gaugeLoad"
                         android:layout_width="match_parent"
                         android:layout_height="110dp"
                         android:layout_marginTop="4dp" />

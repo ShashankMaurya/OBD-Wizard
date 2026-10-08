@@ -38,7 +38,7 @@ import java.util.Locale;
  *     <li>Engine Coolant Temperature gauge card (ArcGaugeView).</li>
  *     <li>Battery Voltage gauge card (ArcGaugeView).</li>
  *     <li>Throttle Position percentage gauge card (ArcGaugeView).</li>
- *     <li>Fuel Left gauge card (ArcGaugeView) - incorporating PID 012F fuel tank level sensor feedback & 13.0L capacity.</li>
+ *     <li>Engine Load percentage gauge card (ArcGaugeView) - incorporating PID 0104 engine load sensor feedback.</li>
  *     <li>Engine Runtime digital timer card.</li>
  *     <li>Session Fuel Consumed digital card.</li>
  *     <li>Instant and Average Fuel Economy consumption cards.</li>
@@ -52,7 +52,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
     private ArcGaugeView gaugeTemp;
     private ArcGaugeView gaugeBattery;
     private ArcGaugeView gaugeThrottle;
-    private ArcGaugeView gaugeFuel;
+    private ArcGaugeView gaugeLoad;
     private TextView txtRuntimeValue;
     private TextView txtFuelConsumedValue;
     private TextView txtEconInstValue;
@@ -77,7 +77,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         gaugeTemp = view.findViewById(R.id.gaugeTemp);
         gaugeBattery = view.findViewById(R.id.gaugeBattery);
         gaugeThrottle = view.findViewById(R.id.gaugeThrottle);
-        gaugeFuel = view.findViewById(R.id.gaugeFuel);
+        gaugeLoad = view.findViewById(R.id.gaugeLoad);
         txtRuntimeValue = view.findViewById(R.id.txtRuntimeValue);
         txtFuelConsumedValue = view.findViewById(R.id.txtFuelConsumedValue);
         txtEconInstValue = view.findViewById(R.id.txtEconInstValue);
@@ -223,26 +223,17 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
                 );
             }
 
-            // 6. Update Fuel Left Gauge with Increased Accuracy:
-            // Uses PID 012F Fuel Tank Level Input if available (0-100% of 13.0L capacity),
-            // or falls back to Speed-Density MAF integration (13.0L - sessionFuelConsumedLiters).
-            if (gaugeFuel != null) {
-                double fuelLeftL;
-                if (data.fuelLevelPercent >= 0) {
-                    fuelLeftL = Math.max(0.0, Math.min(13.0, (data.fuelLevelPercent / 100.0) * 13.0));
-                } else {
-                    fuelLeftL = Math.max(0.0, 13.0 - data.sessionFuelConsumedLiters);
-                }
-
-                int fuelColor = (fuelLeftL < 2.5) ? Color.parseColor("#FF3D00") : Color.parseColor("#FF9100");
-                gaugeFuel.setGaugeData(
-                        (float) fuelLeftL,
+            // 6. Update Engine Load Percentage Gauge (0 - 100% range)
+            if (gaugeLoad != null) {
+                int loadColor = (data.engineLoadPercent > 80.0) ? Color.parseColor("#FF3D00") : Color.parseColor("#00E5FF");
+                gaugeLoad.setGaugeData(
+                        (float) data.engineLoadPercent,
                         0f,
-                        13f,
-                        "E",
-                        "F",
-                        String.format(Locale.US, "%.1f L", fuelLeftL),
-                        fuelColor
+                        100f,
+                        "0%",
+                        "100%",
+                        (int) data.engineLoadPercent + " %",
+                        loadColor
                 );
             }
 

@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Outer Load Gauge Arc -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M3,15 A10,10 0 0,1 21,15"
+        android:strokeWidth="2"
+        android:strokeColor="#00E5FF"
+        android:strokeLineCap="round" />
+    <!-- Load level indicator bars -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M6,17 L6,19 M9,15 L9,19 M12,13 L12,19 M15,11 L15,19 M18,9 L18,19"
+        android:strokeWidth="2"
+        android:strokeColor="#00E5FF"
+        android:strokeLineCap="round" />
+</vector>
