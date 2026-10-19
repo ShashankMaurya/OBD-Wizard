@@ -9,7 +9,7 @@ import androidx.room.TypeConverters;
 
 import com.diy.obdwizard.trip.TripRecord;
 
-@Database(entities = {TripRecord.class}, version = 4, exportSchema = false)
+@Database(entities = {TripRecord.class, VehicleProfile.class}, version = 6, exportSchema = false)
 @TypeConverters({TripConverters.class})
 public abstract class TripDatabase extends RoomDatabase {
     private static volatile TripDatabase INSTANCE;
@@ -21,6 +21,7 @@ public abstract class TripDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     TripDatabase.class, "trip_database")
                             .fallbackToDestructiveMigration()
+                            .allowMainThreadQueries()
                             .build();
                 }
             }
@@ -29,4 +30,6 @@ public abstract class TripDatabase extends RoomDatabase {
     }
 
     public abstract TripDao tripDao();
+
+    public abstract VehicleProfileDao vehicleProfileDao();
 }

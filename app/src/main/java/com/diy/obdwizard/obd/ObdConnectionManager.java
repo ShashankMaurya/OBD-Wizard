@@ -1,6 +1,7 @@
 package com.diy.obdwizard.obd;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 
 import com.diy.obdwizard.bluetooth.BluetoothConnection;
 import com.diy.obdwizard.obd.interfaces.IObdDataSource;
@@ -39,7 +40,8 @@ public class ObdConnectionManager {
 
         commandExecutor.execute(() -> {
             BluetoothConnection bt = new BluetoothConnection(targetDevice);
-            obdSource = new RePidEngine(bt);
+            Context ctx = (listener instanceof Context) ? (Context) listener : null;
+            obdSource = new RePidEngine(bt, ctx);
             boolean connected = obdSource.connect();
             isConnecting = false;
             if (connected) {

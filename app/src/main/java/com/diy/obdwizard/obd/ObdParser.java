@@ -322,10 +322,10 @@ public class ObdParser {
      * - AFR = 14.7 (Stoichiometric ratio for gasoline)
      * - GAS_DENSITY = 740.0 g/L
      */
-    public static double calculateFuelFlowLph(int rpm, int mapKpa, int iatC) {
+    public static double calculateFuelFlowLph(int rpm, int mapKpa, int iatC, double displacementLiters) {
         if (rpm == 0 || mapKpa == 0) return 0.0;
 
-        double DISP_L = 0.349;
+        double DISP_L = displacementLiters > 0 ? displacementLiters : 0.349;
         double VE = 0.80;
         double AFR = 14.7;
         double GAS_DENSITY = 740.0; // g/L
@@ -342,16 +342,24 @@ public class ObdParser {
         return fuelLs * 3600.0;
     }
 
+    public static double calculateFuelFlowLph(int rpm, int mapKpa, int iatC) {
+        return calculateFuelFlowLph(rpm, mapKpa, iatC, 0.349);
+    }
+
     /**
      * Calculates instantaneous fuel economy in km/L.
      * <p>
      * Formula: Speed_kmh / FuelFlow_Lph
      */
-    public static double calculateFuelEconomy(int rpm, int mapKpa, int iatC, int speedKmh) {
+    public static double calculateFuelEconomy(int rpm, int mapKpa, int iatC, int speedKmh, double displacementLiters) {
         if (speedKmh == 0) return 0.0;
-        double fuelLh = calculateFuelFlowLph(rpm, mapKpa, iatC);
+        double fuelLh = calculateFuelFlowLph(rpm, mapKpa, iatC, displacementLiters);
         if (fuelLh == 0) return 0.0;
         return speedKmh / fuelLh;
+    }
+
+    public static double calculateFuelEconomy(int rpm, int mapKpa, int iatC, int speedKmh) {
+        return calculateFuelEconomy(rpm, mapKpa, iatC, speedKmh, 0.349);
     }
 
     /**

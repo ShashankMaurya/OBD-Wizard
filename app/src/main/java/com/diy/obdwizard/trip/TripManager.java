@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
 import com.diy.obdwizard.trip.db.TripDatabase;
+import com.diy.obdwizard.trip.db.VehicleProfile;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,13 +32,23 @@ public class TripManager {
     }
 
     public void startTrip(MotorcycleTelemetry initialData) {
+        startTrip(initialData, null);
+    }
+
+    public void startTrip(MotorcycleTelemetry initialData, Context context) {
         currentTrip = new TripRecord(System.currentTimeMillis());
+        if (context != null) {
+            VehicleProfile active = ProfileManager.getInstance(context).getActiveProfile(context);
+            if (active != null) {
+                currentTrip.vehicleProfileId = active.id;
+                currentTrip.vehicleProfileName = active.profileName;
+                currentTrip.vehicleModel = (active.make != null ? active.make + " " : "") + (active.model != null ? active.model : "");
+                currentTrip.fuelType = active.fuelType != null ? active.fuelType : "Petrol";
+            }
+        }
         isRecording = true;
         startFuel = initialData.sessionFuelConsumedLiters;
         lastTelemetry = initialData;
-        // We don't have a direct 'totalDistance' field in telemetry that is global, 
-        // but sessionDistanceKm in RePidEngine is integrated. 
-        // For simplicity, we'll track the delta of sessionFuelConsumedLiters.
     }
 
     public TripRecord stopTrip(MotorcycleTelemetry finalData, Context context) {

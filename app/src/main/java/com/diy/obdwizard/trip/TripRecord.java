@@ -1,16 +1,28 @@
 package com.diy.obdwizard.trip;
 
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
+
+import com.diy.obdwizard.trip.db.VehicleProfile;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(tableName = "trips")
+@Entity(tableName = "trips",
+        foreignKeys = @ForeignKey(entity = VehicleProfile.class,
+                parentColumns = "id",
+                childColumns = "vehicleProfileId",
+                onDelete = ForeignKey.SET_NULL))
 public class TripRecord implements Serializable {
     @PrimaryKey(autoGenerate = true)
     public long id;
+
+    public long vehicleProfileId = 0;
+    public String vehicleProfileName = "";
+    public String vehicleModel = "";
+    public String fuelType = "Petrol";
 
     public long startTimeMs;
     public long endTimeMs;
