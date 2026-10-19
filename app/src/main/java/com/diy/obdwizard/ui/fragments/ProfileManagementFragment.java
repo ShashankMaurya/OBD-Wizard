@@ -70,6 +70,9 @@ public class ProfileManagementFragment extends Fragment implements ProfileAdapte
         profileManager.setActiveProfile(profile);
         Toast.makeText(requireContext(), "Active Profile: " + profile.profileName, Toast.LENGTH_SHORT).show();
         loadProfiles();
+        if (requireActivity() instanceof MainActivity) {
+            ((MainActivity) requireActivity()).updateNavHeader();
+        }
     }
 
     @Override
@@ -98,6 +101,9 @@ public class ProfileManagementFragment extends Fragment implements ProfileAdapte
                         }
                     }
                     loadProfiles();
+                    if (requireActivity() instanceof MainActivity) {
+                        ((MainActivity) requireActivity()).updateNavHeader();
+                    }
                     Toast.makeText(requireContext(), "Profile Deleted", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
@@ -200,6 +206,9 @@ public class ProfileManagementFragment extends Fragment implements ProfileAdapte
                         }
                     }
                     loadProfiles();
+                    if (requireActivity() instanceof MainActivity) {
+                        ((MainActivity) requireActivity()).updateNavHeader();
+                    }
                     Toast.makeText(requireContext(), "Profile Saved", Toast.LENGTH_SHORT).show();
 
                     if (wasEmpty && requireActivity() instanceof MainActivity) {

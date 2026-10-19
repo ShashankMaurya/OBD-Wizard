@@ -272,6 +272,12 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         openDtcDialog(null, null);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNavHeader();
+    }
+
     public void updateNavHeader() {
         NavigationView navView = findViewById(R.id.nav_view);
         if (navView == null) return;
