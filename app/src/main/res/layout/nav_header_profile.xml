@@ -22,10 +22,11 @@
         app:strokeWidth="2dp">
 
         <ImageView
+            android:id="@+id/imgHeaderProfileThumb"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="16dp"
-            android:src="@drawable/ic_nav_dashboard"
+            android:src="@drawable/ic_bike_blueprint"
             app:tint="@color/black_bg" />
     </com.google.android.material.card.MaterialCardView>
 

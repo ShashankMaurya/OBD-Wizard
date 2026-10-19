@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +40,7 @@ import com.diy.obdwizard.ui.fragments.TripHistoryFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -285,15 +287,24 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         if (headerView == null) return;
         TextView txtName = headerView.findViewById(R.id.txtHeaderProfileName);
         TextView txtSub = headerView.findViewById(R.id.txtHeaderProfileSubtitle);
+        ImageView imgThumb = headerView.findViewById(R.id.imgHeaderProfileThumb);
 
         VehicleProfile active = ProfileManager.getInstance(this).getActiveProfile(this);
         if (active != null) {
             if (txtName != null) txtName.setText(active.profileName);
             if (txtSub != null)
                 txtSub.setText(active.make + " " + active.model + " • " + (int) active.displacementCc + "cc");
+            if (imgThumb != null) {
+                if (active.vehicleType != null && active.vehicleType.toLowerCase(Locale.US).contains("car")) {
+                    imgThumb.setImageResource(R.drawable.ic_car_blueprint);
+                } else {
+                    imgThumb.setImageResource(R.drawable.ic_bike_blueprint);
+                }
+            }
         } else {
             if (txtName != null) txtName.setText("No Profile Selected");
             if (txtSub != null) txtSub.setText("Tap to add vehicle profile");
+            if (imgThumb != null) imgThumb.setImageResource(R.drawable.ic_bike_blueprint);
         }
     }
 
