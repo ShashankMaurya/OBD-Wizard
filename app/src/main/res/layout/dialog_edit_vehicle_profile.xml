@@ -35,18 +35,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Vehicle Type (Motorcycle / Car)"
+            android:text="Vehicle Type"
             android:textColor="@color/text_gray"
             android:textSize="12sp" />
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/edtVehicleType"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginBottom="12dp"
             android:background="@drawable/bg_dashboard_card"
-            android:hint="Vehicle Type"
-            android:inputType="text"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="Select Vehicle Type"
+            android:inputType="none"
             android:padding="12dp"
             android:textColor="@color/text_white"
             android:textColorHint="@color/text_gray"
@@ -229,14 +231,16 @@
                     android:textColor="@color/text_gray"
                     android:textSize="12sp" />
 
-                <EditText
+                <AutoCompleteTextView
                     android:id="@+id/edtFuelType"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginBottom="12dp"
                     android:background="@drawable/bg_dashboard_card"
-                    android:hint="Petrol / Diesel"
-                    android:inputType="text"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:hint="Select Fuel Type"
+                    android:inputType="none"
                     android:padding="12dp"
                     android:textColor="@color/text_white"
                     android:textColorHint="@color/text_gray"

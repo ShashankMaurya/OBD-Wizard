@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -22,6 +24,7 @@ import com.diy.obdwizard.trip.db.VehicleProfile;
 import com.diy.obdwizard.trip.db.VehicleProfileDao;
 import com.diy.obdwizard.ui.adapters.ProfileAdapter;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
 
@@ -106,29 +109,37 @@ public class ProfileManagementFragment extends Fragment implements ProfileAdapte
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_vehicle_profile, null);
 
         EditText edtProfileName = dialogView.findViewById(R.id.edtProfileName);
-        EditText edtVehicleType = dialogView.findViewById(R.id.edtVehicleType);
+        AutoCompleteTextView edtVehicleType = dialogView.findViewById(R.id.edtVehicleType);
         EditText edtMake = dialogView.findViewById(R.id.edtMake);
         EditText edtModel = dialogView.findViewById(R.id.edtModel);
         EditText edtYear = dialogView.findViewById(R.id.edtYear);
         EditText edtDisplacement = dialogView.findViewById(R.id.edtDisplacement);
         EditText edtFuelCapacity = dialogView.findViewById(R.id.edtFuelCapacity);
-        EditText edtFuelType = dialogView.findViewById(R.id.edtFuelType);
+        AutoCompleteTextView edtFuelType = dialogView.findViewById(R.id.edtFuelType);
+
+        ArrayAdapter<String> vehicleAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, new String[]{"Car", "Motorcycle"});
+        edtVehicleType.setAdapter(vehicleAdapter);
+        edtVehicleType.setOnClickListener(v -> edtVehicleType.showDropDown());
+
+        ArrayAdapter<String> fuelAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, new String[]{"Petrol", "Diesel"});
+        edtFuelType.setAdapter(fuelAdapter);
+        edtFuelType.setOnClickListener(v -> edtFuelType.showDropDown());
 
         if (isEdit) {
             edtProfileName.setText(profileToEdit.profileName);
-            edtVehicleType.setText(profileToEdit.vehicleType);
+            edtVehicleType.setText(profileToEdit.vehicleType, false);
             edtMake.setText(profileToEdit.make);
             edtModel.setText(profileToEdit.model);
             edtYear.setText(String.valueOf(profileToEdit.year));
             edtDisplacement.setText(String.valueOf(profileToEdit.displacementCc));
             edtFuelCapacity.setText(String.valueOf(profileToEdit.fuelCapacityLiters));
-            edtFuelType.setText(profileToEdit.fuelType);
+            edtFuelType.setText(profileToEdit.fuelType, false);
         } else {
-            edtVehicleType.setText("Motorcycle");
+            edtVehicleType.setText("Motorcycle", false);
             edtYear.setText("2023");
             edtDisplacement.setText("349");
             edtFuelCapacity.setText("13.0");
-            edtFuelType.setText("Petrol");
+            edtFuelType.setText("Petrol", false);
         }
 
         new AlertDialog.Builder(requireContext())
@@ -197,6 +208,10 @@ public class ProfileManagementFragment extends Fragment implements ProfileAdapte
                                 .replace(R.id.fragment_container, new DashboardFragment())
                                 .commit();
                         requireActivity().setTitle("Dashboard");
+                        NavigationView navView = requireActivity().findViewById(R.id.nav_view);
+                        if (navView != null) {
+                            navView.setCheckedItem(R.id.nav_dashboard);
+                        }
                     }
                 })
                 .setNegativeButton("Cancel", null)

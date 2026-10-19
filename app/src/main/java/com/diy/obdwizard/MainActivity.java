@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
                         .replace(R.id.fragment_container, selectedFragment)
                         .commit();
                 setTitle(item.getTitle());
+                item.setChecked(true);
             }
 
             drawerLayout.closeDrawers();
