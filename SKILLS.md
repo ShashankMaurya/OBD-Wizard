@@ -3,7 +3,8 @@
 Welcome to the **OBD Wizard** project repository. This document serves as the definitive technical
 specification and knowledge base for the application. Any AI model or developer referencing this
 file will gain immediate expert-level context on the codebase architecture, OBD-II communication
-protocol, telemetry mathematical models, persistent storage, and custom UI components.
+protocol, telemetry mathematical models, vehicle profile management, persistent storage, and custom
+UI components.
 
 ---
 
@@ -19,8 +20,11 @@ Key capabilities:
   Position, Engine Temperature, Manifold Absolute Pressure (MAP), Intake Air Temperature (IAT), O2
   Sensor Voltage, ECU Battery Voltage, Engine Load, Ignition Timing Advance, and Fuel Level.
 - **Derived Metrics & Calculations:** Instantaneous Gear estimation, Speed-Density fuel flow
-  calculation (L/h), instantaneous and session average fuel economy (km/L), battery charging health
+  calculation (L/h) using dynamic vehicle displacement, instantaneous and session average fuel
+  economy (km/L), battery charging health
   diagnostics, and Air-Fuel mixture status (LEAN, OPTIMAL, RICH).
+- **Vehicle Profile Management:** Multi-vehicle support (Motorcycles, Cars) with custom make, model,
+  year, fuel type, and engine displacement (CC) stored in Room DB and managed via `ProfileManager`.
 - **Performance Timers:** Automated 0–40 km/h, 0–60 km/h, 0–80 km/h, and 0–100 km/h acceleration
   timers.
 - **Diagnostic Trouble Codes (DTC):** Reading stored DTC codes (Mode 03), translating codes via a
@@ -43,7 +47,7 @@ Key capabilities:
 - **UI Architecture:** XML Layouts with **ViewBinding**, AndroidX Navigation Component, Navigation
   Drawer (`NavigationView`), Custom Canvas Views, and MPAndroidChart (`v3.1.0`).
 - **Persistence:** Room Database (`2.6.1`) with custom TypeConverters (`TripConverters`) for
-  serializing time-series snapshots and lists.
+  serializing time-series snapshots and lists, plus vehicle profile tables (`vehicle_profiles`).
 - **Async & Concurrency:** Java `ExecutorService` (single-thread background command queue) and
   `ScheduledExecutorService` (60ms polling loop).
 
@@ -69,17 +73,21 @@ com.diy.obdwizard/
 │   └── models/
 │       └── MotorcycleTelemetry.java # Comprehensive telemetry data transfer object (raw PIDs + derived metrics)
 ├── trip/
+│   ├── ProfileManager.java          # Singleton managing active vehicle profile, SharedPreferences cache & displacement
 │   ├── TripManager.java             # Singleton managing active trip recording, telemetry sampling, peak tracking
 │   ├── TripRecord.java              # Room Entity representing a completed trip and nested TelemetrySnapshot list
 │   └── db/
 │       ├── TripConverters.java      # Gson-based TypeConverters for Room DB storing lists
 │       ├── TripDao.java             # Room Data Access Object for trips
-│       └── TripDatabase.java        # Room Database instance
+│       ├── TripDatabase.java        # Room Database instance
+│       ├── VehicleProfile.java      # Room Entity representing a vehicle configuration profile
+│       └── VehicleProfileDao.java   # Room Data Access Object for vehicle profiles
 └── ui/
     ├── activities/
     │   ├── FullScreenChartActivity.java # Landscape chart view for trip analytics
     │   └── TripSummaryActivity.java     # Detailed trip statistics & interactive MPAndroidChart view
     ├── adapters/
+    │   ├── ProfileAdapter.java          # RecyclerView adapter for managing vehicle profiles
     │   └── TripHistoryAdapter.java      # RecyclerView adapter for past trips
     ├── charts/
     │   └── ChartDataHolder.java         # Static data holder for passing chart payloads between activities
@@ -88,6 +96,7 @@ com.diy.obdwizard/
     │   ├── AdvancedDashFragment.java    # Secondary ECU telemetry & timing statistics fragment
     │   ├── DashboardFragment.java       # Primary gauge dashboard fragment with RpmSpeedGaugeView & ArcGaugeView
     │   ├── DtcFragment.java             # DTC diagnostics UI fragment
+    │   ├── ProfileManagementFragment.java # UI fragment for creating, editing, and switching vehicle profiles
     │   └── TripHistoryFragment.java     # History list fragment
     └── views/
         ├── ArcGaugeView.java            # Custom circular arc gauge component
@@ -114,8 +123,9 @@ com.diy.obdwizard/
     6. `ATSP0` - Set protocol to automatic search.
     7. `0100` - Request supported PIDs (01-20) to verify ECU response (`4100`).
 - **Polling Loop:** `ObdConnectionManager` schedules telemetry polling every **60 ms** (
-  `ScheduledExecutorService`). During synchronous operations (such as reading or clearing DTCs),
-  `isPaused` is set to `true` to prevent command collisions on the single-thread command queue.
+  `ScheduledExecutorService`). During synchronous operations (such as reading or clearing DTCs, or
+  switching profiles), `isPaused` is set to `true` to prevent command collisions on the
+  single-thread command queue.
 
 ### 4.2 OBD-II PID Parsing & Mathematical Models (`ObdParser`)
 
@@ -142,8 +152,9 @@ All Mode 01 PIDs follow the SAE J1979 standard:
   RPM < 800).
 - **Fuel Flow & Economy (Speed-Density Method):**
     - Approximates Mass Air Flow (MAF) using the Ideal Gas Law (`PV = nRT`) based on RPM, MAP, IAT (
-      converted to Kelvin), engine displacement (`0.349 L` for RE 350), and volumetric efficiency (
-      `VE = 0.80`).
+      converted to Kelvin), engine displacement from active vehicle profile (
+      `ProfileManager.getActiveDisplacementLiters()`, defaulting to `0.349 L` for RE 350), and
+      volumetric efficiency (`VE = 0.80`).
     - Computes fuel mass flow using stoichiometric air-fuel ratio (`AFR = 14.7`) and gasoline
       density (`740 g/L`) to yield fuel flow in Liters per hour (L/h).
     - Instantaneous Fuel Economy: `Speed_Kmh / FuelFlow_Lph` (km/L).
@@ -151,7 +162,16 @@ All Mode 01 PIDs follow the SAE J1979 standard:
   indicating stator/rectifier wear).
 - **O2 Mixture Status:** Evaluates O2 voltage (`< 0.3V` = LEAN, `> 0.6V` = RICH, else OPTIMAL).
 
-### 4.3 Diagnostic Trouble Codes (`DtcHelper`)
+### 4.3 Vehicle Profile Management (`ProfileManager`, `VehicleProfile`, `VehicleProfileDao`)
+
+- **Multi-Vehicle Support:** Allows users to define custom profiles (`VehicleProfile`) with
+  attributes including profile name, vehicle type ("Motorcycle", "Car"), make, model, year,
+  displacement in CC, fuel capacity, and default status.
+- **Active Profile Persistence:** `ProfileManager` caches the active profile in memory and persists
+  its ID in `SharedPreferences` (`obd_profile_prefs`). It integrates directly with `ObdParser` to
+  supply engine displacement for accurate fuel calculations across different vehicle engines.
+
+### 4.4 Diagnostic Trouble Codes (`DtcHelper`)
 
 - **Dictionary Asset:** Loads `assets/dtc_dictionary.json` containing standard OBD-II diagnostic
   fault codes mapped to human-readable descriptions.
@@ -159,7 +179,7 @@ All Mode 01 PIDs follow the SAE J1979 standard:
   chunks into standard `PXXXX` codes.
 - **Mode 04:** Sends clear command (`04`), verifying success upon receiving `OK` or `44`.
 
-### 4.4 Trip Recording & Persistence (`TripManager`, `TripRecord`, Room DB)
+### 4.5 Trip Recording & Persistence (`TripManager`, `TripRecord`, Room DB)
 
 - **Trip Lifecycle:** `TripManager` tracks recording state, records time-series `TelemetrySnapshot`
   objects at polling intervals, updates peak extremes (max speed, max RPM, max temp, max load,
@@ -179,5 +199,8 @@ When modifying or extending this codebase:
    thread (`runOnUiThread`).
 3. **ViewBinding:** Always use ViewBinding (`*Binding`) when interacting with layouts in fragments
    and activities.
-4. **OBD Command Protocol:** When adding new PIDs, ensure proper hex parsing in `ObdParser` and
+4. **Vehicle Profiles:** When adding telemetry features dependent on engine specifications (
+   displacement, fuel capacity), retrieve parameters dynamically from
+   `ProfileManager.getInstance(context).getActiveDisplacementLiters(context)`.
+5. **OBD Command Protocol:** When adding new PIDs, ensure proper hex parsing in `ObdParser` and
    handle malformed or missing ECU responses gracefully without crashing the polling loop.
