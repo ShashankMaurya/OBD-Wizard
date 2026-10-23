@@ -18,8 +18,10 @@ import com.diy.obdwizard.MainActivity;
 import com.diy.obdwizard.R;
 import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
+import com.diy.obdwizard.trip.ProfileManager;
 import com.diy.obdwizard.trip.TripManager;
 import com.diy.obdwizard.trip.TripRecord;
+import com.diy.obdwizard.trip.db.VehicleProfile;
 import com.diy.obdwizard.ui.activities.TripSummaryActivity;
 import com.diy.obdwizard.ui.views.ArcGaugeView;
 import com.diy.obdwizard.ui.views.BikeGearView;
@@ -57,6 +59,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
     private TextView txtFuelConsumedValue;
     private TextView txtEconInstValue;
     private TextView txtEconAvgValue;
+    private TextView txtHeaderVehicleName;
     private MaterialButton btnTripAction;
 
     // OBD Connection Views
@@ -82,7 +85,9 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         txtFuelConsumedValue = view.findViewById(R.id.txtFuelConsumedValue);
         txtEconInstValue = view.findViewById(R.id.txtEconInstValue);
         txtEconAvgValue = view.findViewById(R.id.txtEconAvgValue);
+        txtHeaderVehicleName = view.findViewById(R.id.txtHeaderVehicleName);
         btnTripAction = view.findViewById(R.id.btnTripAction);
+        updateVehicleProfileHeader();
 
         // Bind OBD connection views
         txtHeaderStatus = view.findViewById(R.id.txtHeaderStatus);
@@ -118,7 +123,7 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
                     Toast.makeText(getContext(), "Wait for telemetry data...", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                tm.startTrip(lastData);
+                tm.startTrip(lastData, getContext());
                 updateTripButtonState();
                 Toast.makeText(getContext(), "Trip Recording Started", Toast.LENGTH_SHORT).show();
             }
@@ -323,9 +328,21 @@ public class DashboardFragment extends Fragment implements TelemetryUpdateListen
         });
     }
 
+    public void updateVehicleProfileHeader() {
+        if (txtHeaderVehicleName != null && getContext() != null) {
+            VehicleProfile active = ProfileManager.getInstance(getContext()).getActiveProfile(getContext());
+            if (active != null) {
+                txtHeaderVehicleName.setText(active.profileName.toUpperCase(Locale.US));
+            } else {
+                txtHeaderVehicleName.setText("SELECT VEHICLE PROFILE");
+            }
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         updateConnectionStatus();
+        updateVehicleProfileHeader();
     }
 }

@@ -50,6 +50,15 @@ public class TripSummaryActivity extends AppCompatActivity {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy • HH:mm", Locale.getDefault());
         ((TextView) findViewById(R.id.txtTripTime)).setText(sdf.format(new Date(record.startTimeMs)));
 
+        TextView txtVehicle = findViewById(R.id.txtSumVehicleName);
+        if (txtVehicle != null) {
+            String vName = (record.vehicleProfileName != null && !record.vehicleProfileName.isEmpty()) ? record.vehicleProfileName : "Vehicle";
+            if (record.vehicleModel != null && !record.vehicleModel.isEmpty()) {
+                vName += " (" + record.vehicleModel + ")";
+            }
+            txtVehicle.setText(vName);
+        }
+
         ((TextView) findViewById(R.id.txtSumDistance)).setText(String.format(Locale.US, "%.1f km", record.totalDistanceKm));
 
         long durationSec = record.durationMs / 1000;

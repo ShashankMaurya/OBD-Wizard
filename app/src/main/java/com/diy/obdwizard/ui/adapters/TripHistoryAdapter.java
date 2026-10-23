@@ -40,6 +40,12 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         TripRecord trip = trips.get(position);
         holder.txtDate.setText(dateFormat.format(new Date(trip.startTimeMs)));
 
+        String vName = (trip.vehicleProfileName != null && !trip.vehicleProfileName.isEmpty()) ? trip.vehicleProfileName : "Vehicle";
+        if (trip.vehicleModel != null && !trip.vehicleModel.isEmpty()) {
+            vName += " • " + trip.vehicleModel;
+        }
+        holder.txtVehicleName.setText(vName);
+
         long durationMs = trip.durationMs;
         long sec = (durationMs / 1000) % 60;
         long min = (durationMs / 60000) % 60;
@@ -78,12 +84,13 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtDate, txtDuration, txtDistance, txtTime;
+        TextView txtDate, txtVehicleName, txtDuration, txtDistance, txtTime;
         ImageButton btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             txtDate = itemView.findViewById(R.id.txtTripDate);
+            txtVehicleName = itemView.findViewById(R.id.txtVehicleName);
             txtDuration = itemView.findViewById(R.id.txtTripDuration);
             txtDistance = itemView.findViewById(R.id.txtTripDistance);
             txtTime = itemView.findViewById(R.id.txtTripTime);

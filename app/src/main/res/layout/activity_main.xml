@@ -52,6 +52,7 @@
         android:layout_gravity="start"
         android:background="@color/black_bg"
         android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header_profile"
         app:itemIconTint="@color/text_white"
         app:itemTextColor="@color/text_white"
         app:menu="@menu/drawer_menu" />

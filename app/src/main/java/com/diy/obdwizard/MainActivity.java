@@ -8,6 +8,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,16 +27,20 @@ import com.diy.obdwizard.obd.ObdConnectionManager;
 import com.diy.obdwizard.obd.interfaces.ObdManagerCallbacks;
 import com.diy.obdwizard.obd.interfaces.TelemetryUpdateListener;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
+import com.diy.obdwizard.trip.ProfileManager;
 import com.diy.obdwizard.trip.TripManager;
 import com.diy.obdwizard.trip.TripRecord;
+import com.diy.obdwizard.trip.db.VehicleProfile;
 import com.diy.obdwizard.ui.fragments.AboutFragment;
 import com.diy.obdwizard.ui.fragments.AdvancedDashFragment;
 import com.diy.obdwizard.ui.fragments.DashboardFragment;
 import com.diy.obdwizard.ui.fragments.DtcFragment;
+import com.diy.obdwizard.ui.fragments.ProfileManagementFragment;
 import com.diy.obdwizard.ui.fragments.TripHistoryFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,7 +73,15 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        ProfileManager profileManager = ProfileManager.getInstance(this);
+
         navView.setNavigationItemSelectedListener(item -> {
+            if (!profileManager.hasProfiles()) {
+                Toast.makeText(this, "Please create your vehicle profile first", Toast.LENGTH_SHORT).show();
+                drawerLayout.closeDrawers();
+                return false;
+            }
+
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
 
@@ -91,11 +105,27 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
                         .replace(R.id.fragment_container, selectedFragment)
                         .commit();
                 setTitle(item.getTitle());
+                item.setChecked(true);
             }
 
             drawerLayout.closeDrawers();
             return true;
         });
+
+        View headerView = navView.getHeaderView(0);
+        if (headerView != null) {
+            View cardCircle = headerView.findViewById(R.id.cardProfileCircle);
+            if (cardCircle != null) {
+                cardCircle.setOnClickListener(v -> {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, new ProfileManagementFragment())
+                            .commit();
+                    setTitle("Vehicle Profiles");
+                    drawerLayout.closeDrawers();
+                });
+            }
+        }
+        updateNavHeader();
 
         obdManager = new ObdConnectionManager(this);
         obdManager.executeInBackground(() -> DtcHelper.preloadDtcMap(getApplicationContext()));
@@ -103,10 +133,18 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
         checkPermissions();
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new DashboardFragment())
-                    .commit();
-            navView.setCheckedItem(R.id.nav_dashboard);
+            if (!profileManager.hasProfiles()) {
+                Toast.makeText(this, "Please create your first vehicle profile", Toast.LENGTH_LONG).show();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new ProfileManagementFragment())
+                        .commit();
+                setTitle("Vehicle Profiles");
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new DashboardFragment())
+                        .commit();
+                navView.setCheckedItem(R.id.nav_dashboard);
+            }
         }
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -234,6 +272,40 @@ public class MainActivity extends AppCompatActivity implements ObdManagerCallbac
 
     public void openDtcDialog() {
         openDtcDialog(null, null);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNavHeader();
+    }
+
+    public void updateNavHeader() {
+        NavigationView navView = findViewById(R.id.nav_view);
+        if (navView == null) return;
+        View headerView = navView.getHeaderView(0);
+        if (headerView == null) return;
+        TextView txtName = headerView.findViewById(R.id.txtHeaderProfileName);
+        TextView txtSub = headerView.findViewById(R.id.txtHeaderProfileSubtitle);
+        ImageView imgThumb = headerView.findViewById(R.id.imgHeaderProfileThumb);
+
+        VehicleProfile active = ProfileManager.getInstance(this).getActiveProfile(this);
+        if (active != null) {
+            if (txtName != null) txtName.setText(active.profileName);
+            if (txtSub != null)
+                txtSub.setText(active.make + " " + active.model + " • " + (int) active.displacementCc + "cc");
+            if (imgThumb != null) {
+                if (active.vehicleType != null && active.vehicleType.toLowerCase(Locale.US).contains("car")) {
+                    imgThumb.setImageResource(R.drawable.ic_car_blueprint);
+                } else {
+                    imgThumb.setImageResource(R.drawable.ic_bike_blueprint);
+                }
+            }
+        } else {
+            if (txtName != null) txtName.setText("No Profile Selected");
+            if (txtSub != null) txtSub.setText("Tap to add vehicle profile");
+            if (imgThumb != null) imgThumb.setImageResource(R.drawable.ic_bike_blueprint);
+        }
     }
 
     public void openDtcDialog(Runnable onStart, Runnable onFinish) {

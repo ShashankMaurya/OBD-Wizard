@@ -1,15 +1,19 @@
 package com.diy.obdwizard.obd;
 
+import android.content.Context;
+
 import com.diy.obdwizard.bluetooth.BluetoothConnection;
 import com.diy.obdwizard.dtc.DtcHelper;
 import com.diy.obdwizard.obd.interfaces.IObdDataSource;
 import com.diy.obdwizard.obd.models.MotorcycleTelemetry;
+import com.diy.obdwizard.trip.ProfileManager;
 
 import java.io.IOException;
 import java.util.List;
 
 public class RePidEngine implements IObdDataSource {
     private final BluetoothConnection connection;
+    private final Context context;
 
     // State for performance timers
     private boolean isTiming0To40 = false;
@@ -33,8 +37,14 @@ public class RePidEngine implements IObdDataSource {
     private double sessionFuelConsumedLiters = 0.0;
     private double sessionDistanceKm = 0.0;
 
+    public RePidEngine(BluetoothConnection connection, Context context) {
+        this.connection = connection;
+        this.context = context;
+    }
+
     public RePidEngine(BluetoothConnection connection) {
         this.connection = connection;
+        this.context = null;
     }
 
     @Override
@@ -112,7 +122,12 @@ public class RePidEngine implements IObdDataSource {
         data.fuelLevelPercent = ObdParser.parseFuelLevel(fuelLevelRaw);
 
         // Calculate derived fields
-        data.fuelEconomyKml = ObdParser.calculateFuelEconomy(data.rpm, data.mapKpa, data.iatTempC, data.speedKmh);
+        double displacementLiters = 0.349;
+        if (context != null) {
+            displacementLiters = ProfileManager.getInstance(context).getActiveDisplacementLiters(context);
+        }
+
+        data.fuelEconomyKml = ObdParser.calculateFuelEconomy(data.rpm, data.mapKpa, data.iatTempC, data.speedKmh, displacementLiters);
         data.isBatteryChargingPoor = ObdParser.checkBatteryHealth(data.rpm, data.controlModuleVoltage);
         data.mixtureStatus = ObdParser.evaluateMixture(data.o2Voltage);
 
@@ -124,7 +139,7 @@ public class RePidEngine implements IObdDataSource {
         // Cap dt to 2 seconds to avoid massive jumps if app paused or polling delayed
         if (dtMs > 0 && dtMs < 2000) {
             double dtHours = dtMs / 3600000.0;
-            double fuelFlowLph = ObdParser.calculateFuelFlowLph(data.rpm, data.mapKpa, data.iatTempC);
+            double fuelFlowLph = ObdParser.calculateFuelFlowLph(data.rpm, data.mapKpa, data.iatTempC, displacementLiters);
             sessionFuelConsumedLiters += fuelFlowLph * dtHours;
             sessionDistanceKm += data.speedKmh * dtHours;
         }

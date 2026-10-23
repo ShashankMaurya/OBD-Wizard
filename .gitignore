@@ -52,3 +52,4 @@ Desktop.ini
 
 # AI Artifacts
 .artifacts/
+*.artifact.md
