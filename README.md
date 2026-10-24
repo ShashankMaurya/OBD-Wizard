@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/Target_SDK-37-orange?style=flat-square" alt="Target SDK 37">
   <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License MIT">
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square" alt="Build Status">
-  <a href="https://github.com/your-username/OBD-Wizard/releases/latest"><img src="https://img.shields.io/github/v/release/your-username/OBD-Wizard?label=Download%20APK&color=green" alt="Latest Release"></a>
+  <a href="https://github.com/ShashankMaurya/OBD-Wizard/releases/latest"><img src="https://img.shields.io/github/v/release/ShashankMaurya/OBD-Wizard?label=Download%20APK&color=green" alt="Latest Release"></a>
 </p>
 
 ---
@@ -109,7 +109,7 @@ com.diy.obdwizard/
 ### 📱 Installing from Releases (Sideloading)
 
 If you downloaded the prebuilt APK from
-the [Releases](https://github.com/your-username/OBD-Wizard/releases) page:
+the [Releases](https://github.com/ShashankMaurya/OBD-Wizard/releases) page:
 
 1. Download the latest `OBD-Wizard-v1.0.0.apk` from the Releases section.
 2. Open the downloaded file on your Android device.
@@ -128,7 +128,7 @@ the [Releases](https://github.com/your-username/OBD-Wizard/releases) page:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/OBD-Wizard.git
+   git clone https://github.com/ShashankMaurya/OBD-Wizard.git
    ```
 2. Open the project folder in Android Studio.
 3. Sync Gradle and run the app (`:app:assembleDebug`) on your physical Android device with Bluetooth
